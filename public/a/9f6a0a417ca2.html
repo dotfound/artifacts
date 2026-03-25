@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server-Side GTM ROI Calculator | dotfound</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --navy: #002040;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --coral: #FF6B6B;
+  --cyan: #22D3EE;
+  --purple: #a78bfa;
+  --light-blue: #cee4ff;
+  --off-white: #f2f2f2;
+  --grey: #767676;
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-body: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --text-accent: #22D3EE;
+  --text-on-coral: #002040;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-hover: rgba(167, 139, 250, 0.3);
+  --font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --padding-page: 2rem;
+}
+
+@media (min-width: 1024px) {
+  :root { --padding-page: 5rem; }
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--navy);
+  color: var(--text-body);
+  font-weight: 300;
+  line-height: 1.6;
+  font-size: 16px;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5rem var(--padding-page);
+  border-bottom: 1px solid var(--border);
+}
+.page-header .logo svg { height: 22px; width: auto; }
+.page-header .tool-name {
+  font-size: 0.8rem; font-weight: 500; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem var(--padding-page) 4rem;
+}
+
+/* Intro */
+.intro {
+  max-width: 720px;
+  margin-bottom: 2.5rem;
+}
+.intro h1 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+.intro p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* Calculator layout */
+.tool-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+@media (max-width: 768px) {
+  .tool-layout { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+}
+
+/* Input panel */
+.input-panel {
+  display: flex;
+  flex-direction: column;
+}
+.input-panel h2 {
+  font-size: 1.1rem; font-weight: 500; color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+.input-panel .scenario-selector {
+  margin-top: auto;
+}
+
+.field-group { margin-bottom: 1.5rem; }
+.field-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.field-label {
+  font-size: 0.8rem; font-weight: 500; color: var(--text-primary);
+}
+.field-value {
+  font-size: 0.85rem; font-weight: 500; color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+.field-hint {
+  display: block; font-size: 0.72rem; color: var(--text-muted);
+  margin-top: 0.4rem;
+}
+
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  background: rgba(255,255,255,0.12); border-radius: 2px;
+  outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  background: var(--coral); border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--navy);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px; background: var(--coral);
+  border-radius: 50%; cursor: pointer; border: 2px solid var(--navy);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.75rem 0;
+}
+
+/* Scenario selector */
+.scenario-selector {
+  margin-bottom: 0.25rem;
+}
+.scenario-selector label {
+  font-size: 0.8rem; font-weight: 500; color: var(--text-primary);
+  display: block; margin-bottom: 0.6rem;
+}
+.scenario-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+}
+.scenario-btn {
+  padding: 0.6rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-family);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+.scenario-btn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-body);
+}
+.scenario-btn.active {
+  background: rgba(255,107,107,0.1);
+  border-color: var(--coral);
+  color: var(--text-primary);
+}
+.scenario-btn .btn-pct {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--coral);
+  margin-bottom: 0.15rem;
+}
+.scenario-btn.active .btn-pct {
+  color: var(--coral);
+}
+
+/* Output panel */
+.output-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+.output-panel h2 {
+  font-size: 1.1rem; font-weight: 500; color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+/* Cost items */
+.cost-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.cost-item-label {
+  font-size: 0.78rem; color: var(--text-muted); font-weight: 400;
+}
+.cost-item-value {
+  font-size: 0.9rem; font-weight: 500; color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.cost-item-sub {
+  font-size: 0.68rem; color: var(--text-muted); font-weight: 300;
+  margin-top: 0.1rem;
+}
+
+.results-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Metrics grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.metric { display: flex; flex-direction: column; }
+.metric-label {
+  font-size: 0.68rem; font-weight: 400; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem;
+}
+.metric-value {
+  font-size: 1.2rem; font-weight: 600; color: var(--text-primary);
+  transition: color var(--transition-normal);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.metric-value.big {
+  font-size: 1.6rem;
+}
+.metric-value.positive { color: #4dff88; }
+.metric-value.negative { color: #ff4d4d; }
+.metric-sub {
+  font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem;
+}
+
+/* Payback */
+.payback-card {
+  padding: 1rem 1.25rem;
+  background: rgba(77, 255, 136, 0.04);
+  border: 1px solid rgba(77, 255, 136, 0.12);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+.payback-label {
+  font-size: 0.8rem; color: var(--text-body); font-weight: 400;
+}
+.payback-value {
+  font-size: 1.1rem; font-weight: 600; color: #4dff88;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Explainer section */
+.explainer {
+  margin-top: 4rem;
+  max-width: 720px;
+}
+.explainer h2 {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+.explainer p {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
+/* Benefits */
+.benefits {
+  margin-top: 3rem;
+}
+.benefits h2 {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+.benefits .benefits-intro {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  max-width: 640px;
+}
+.benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 768px) {
+  .benefits-grid { grid-template-columns: 1fr; }
+}
+.benefit-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: border-color var(--transition-fast);
+}
+.benefit-card:hover { border-color: var(--border-hover); }
+.benefit-icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+.benefit-icon.privacy { background: rgba(167,139,250,0.12); color: var(--purple); }
+.benefit-icon.future { background: rgba(34,211,238,0.12); color: var(--cyan); }
+.benefit-icon.performance { background: rgba(255,107,107,0.12); color: var(--coral); }
+.benefit-icon.enrichment { background: rgba(206,228,255,0.12); color: var(--light-blue); }
+.benefit-icon.attribution { background: rgba(77,255,136,0.12); color: #4dff88; }
+
+.benefit-card h3 {
+  font-size: 0.9rem; font-weight: 500; color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+.benefit-card p {
+  font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;
+}
+
+/* Assumptions */
+.assumptions {
+  margin-top: 3rem; padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.assumptions h3 {
+  font-size: 0.8rem; font-weight: 500; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;
+}
+.assumptions p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; }
+.assumptions p + p { margin-top: 0.5rem; }
+
+/* Footer */
+.page-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5rem var(--padding-page);
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+.page-footer .logo svg { height: 18px; width: auto; opacity: 0.3; }
+.page-footer .footer-text { font-size: 0.72rem; color: var(--text-muted); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+.animate-in:nth-child(2) { animation-delay: 0.1s; }
+.animate-in:nth-child(3) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 581.32 111.26" fill="#fff"><g><path d="M57.12,44.39c-1.94-2.53-4.27-4.64-6.97-6.3-4.12-2.54-8.88-3.82-14.14-3.82-6.66,0-12.83,1.74-18.35,5.18-5.5,3.42-9.87,8.13-12.99,14-3.1,5.85-4.68,12.32-4.68,19.24s1.57,12.96,4.67,18.86c3.11,5.9,7.44,10.71,12.89,14.29,5.47,3.6,11.68,5.42,18.45,5.42,5.26,0,10.02-1.29,14.14-3.82,2.7-1.66,5.03-3.77,6.97-6.3v8.47h15.22V0h-15.22V44.39Zm-5.45,11.27c3.62,4.37,5.45,10.21,5.45,17.34s-1.83,12.76-5.45,17.03c-3.6,4.26-8.62,6.33-15.36,6.33s-11.67-2.19-15.42-6.69c-3.77-4.52-5.67-10.27-5.67-17.11s1.93-12.5,5.73-16.86c3.81-4.37,8.83-6.49,15.37-6.49s11.74,2.11,15.35,6.46"/><path d="M137,39.45c-5.47-3.44-11.72-5.18-18.58-5.18s-13.31,1.77-18.88,5.25c-5.56,3.48-9.93,8.22-12.99,14.08-3.05,5.84-4.6,12.36-4.6,19.38,0,6.63,1.57,12.95,4.68,18.79,3.11,5.86,7.48,10.62,12.97,14.14,5.52,3.54,11.85,5.34,18.82,5.34s13.13-1.82,18.6-5.42c5.45-3.57,9.76-8.39,12.82-14.3,3.05-5.9,4.6-12.24,4.6-18.85s-1.55-13.39-4.6-19.23c-3.06-5.87-7.38-10.58-12.84-14.01m-18.58,56.9c-6.63,0-11.68-2.15-15.44-6.56-3.76-4.42-5.67-10.07-5.67-16.8s1.88-12.83,5.6-17.26c3.71-4.41,8.77-6.55,15.5-6.55s11.48,2.09,15.13,6.4c3.66,4.32,5.52,10.03,5.52,16.96s-1.86,12.6-5.54,17.12c-3.65,4.5-8.59,6.68-15.11,6.68"/><path d="M193.13,95.9c-3.82,0-6.47-.92-7.88-2.75-1.5-1.93-2.25-5.58-2.25-10.84V50.24h17.44v-14.16h-17.44V13.07h-14.31v14.52c0,2.85-.6,5.02-1.78,6.45-1.11,1.35-3.41,2.03-6.85,2.03h-4.6v14.16h12.18v34.93c0,8.76,1.93,15.24,5.73,19.26,3.82,4.04,9.71,6.09,17.51,6.09,3.36,0,6.99-.31,10.75-.92l1.22-.2v-14.47l-1.65,.24c-3.41,.49-6.13,.74-8.06,.74"/><path d="M245.31,.49C243.87,.16,242.17,0,240.26,0c-4.01,0-7.84,.88-11.39,2.62-3.59,1.77-6.51,4.42-8.7,7.9-2.19,3.47-3.3,7.6-3.3,12.27v13.28h-10.97v14.16h11.12v59.38h15.37V50.23h15.93v-14.16h-16.09v-12.68c0-3.33,.95-5.59,2.9-6.93,2.13-1.44,4.44-2.15,7.07-2.15,2.97,0,4.17,.38,4.62,.61l2.09,1.04V2.2l-.43-.43c-.53-.53-1.46-.9-3.19-1.29"/><path d="M305.5,39.45c-5.47-3.44-11.72-5.18-18.58-5.18s-13.31,1.77-18.88,5.25c-5.56,3.48-9.93,8.22-12.99,14.08-3.05,5.84-4.6,12.36-4.6,19.38,0,6.63,1.57,12.95,4.68,18.79,3.11,5.86,7.48,10.62,12.97,14.14,5.52,3.54,11.85,5.34,18.82,5.34s13.13-1.82,18.6-5.42c5.45-3.57,9.76-8.39,12.82-14.3,3.05-5.9,4.6-12.24,4.6-18.85s-1.55-13.39-4.6-19.23c-3.06-5.87-7.38-10.58-12.84-14.01m-18.58,56.9c-6.63,0-11.68-2.15-15.43-6.56-3.76-4.42-5.67-10.07-5.67-16.8s1.88-12.83,5.6-17.26c3.71-4.41,8.77-6.55,15.5-6.55s11.48,2.09,15.13,6.4c3.66,4.32,5.52,10.03,5.52,16.96s-1.86,12.6-5.54,17.12c-3.65,4.5-8.59,6.68-15.11,6.68"/><path d="M378.81,73.74c0,6.96-1.57,12.56-4.67,16.64-3.04,4.01-7.29,5.97-12.98,5.97-5.05,0-8.71-1.79-11.21-5.46-2.57-3.79-3.88-8.7-3.88-14.59V36.07h-15.37v43.24c0,9.3,2.3,17,6.84,22.9,4.63,6.01,11.26,9.06,19.71,9.06,7.02,0,12.57-1.63,16.47-4.84,2.03-1.66,3.73-3.36,5.08-5.1v8.28h15.22V36.07h-15.22v37.67Z"/><path d="M441.59,34.27c-7.03,0-12.57,1.63-16.47,4.84-2.03,1.67-3.73,3.38-5.08,5.14v-8.17h-15.37V109.61h15.37v-37.82c0-6.96,1.57-12.55,4.67-16.64,3.04-4.01,7.29-5.97,12.97-5.97,5.05,0,8.71,1.78,11.21,5.45,2.58,3.8,3.89,8.71,3.89,14.6v40.37h15.37v-43.38c0-9.3-2.3-17-6.84-22.9-4.63-6.01-11.26-9.06-19.71-9.06"/><path d="M533.03,44.39c-1.94-2.53-4.27-4.64-6.97-6.3-4.12-2.54-8.87-3.82-14.13-3.82-6.66,0-12.83,1.74-18.35,5.18-5.5,3.42-9.87,8.13-12.99,14-3.1,5.85-4.68,12.32-4.68,19.24s1.57,12.96,4.67,18.86c3.11,5.9,7.44,10.71,12.89,14.29,5.47,3.6,11.68,5.42,18.46,5.42,5.26,0,10.01-1.29,14.13-3.82,2.7-1.66,5.03-3.77,6.97-6.3v8.47h15.22V0h-15.22V44.39Zm-5.45,11.27c3.62,4.37,5.45,10.21,5.45,17.34s-1.83,12.76-5.45,17.03c-3.6,4.26-8.62,6.33-15.35,6.33s-11.67-2.19-15.42-6.69c-3.77-4.52-5.68-10.27-5.68-17.11s1.93-12.5,5.73-16.86c3.81-4.37,8.83-6.49,15.37-6.49s11.74,2.11,15.34,6.46"/><path d="M578.2,91.6h0c-2.08-2.14-4.65-3.22-7.65-3.22s-5.72,1.08-7.8,3.22c-2.07,2.13-3.11,4.76-3.11,7.85s1.05,5.57,3.11,7.7c2.08,2.13,4.7,3.22,7.8,3.22s5.57-1.08,7.65-3.22c2.07-2.13,3.12-4.71,3.12-7.7s-1.05-5.72-3.12-7.85"/></g></svg>
+  </div>
+  <span class="tool-name">sGTM ROI Calculator</span>
+</header>
+
+<div class="container">
+
+  <section class="intro animate-in">
+    <h1>Server-Side GTM ROI Calculator</h1>
+    <p>Ad-blockers and browser privacy restrictions like ITP can prevent up to 30% of conversion data from reaching your ad platforms. Server-side GTM recovers that lost signal, giving automated bidding better data and reducing your cost per acquisition. Enter your numbers below to see the impact.</p>
+  </section>
+
+  <div class="tool-layout">
+
+    <!-- Inputs -->
+    <div class="card input-panel animate-in">
+      <h2>Your Numbers</h2>
+
+      <div class="field-group">
+        <div class="field-top">
+          <label class="field-label" for="adSpend">Monthly Ad Spend</label>
+          <span class="field-value" id="adSpendDisplay">£55,000</span>
+        </div>
+        <input type="range" id="adSpend" min="1000" max="500000" step="1000" value="55000">
+      </div>
+
+      <div class="field-group">
+        <div class="field-top">
+          <label class="field-label" for="cpa">Current CPA</label>
+          <span class="field-value" id="cpaDisplay">£30.00</span>
+        </div>
+        <input type="range" id="cpa" min="1" max="500" step="0.5" value="30">
+      </div>
+
+      <div class="field-group">
+        <div class="field-top">
+          <label class="field-label" for="gaEvents">Monthly GA4 Events</label>
+          <span class="field-value" id="gaEventsDisplay">500,000</span>
+        </div>
+        <input type="range" id="gaEvents" min="50000" max="50000000" step="50000" value="500000">
+        <span class="field-hint">Used to calculate your server infrastructure cost</span>
+      </div>
+
+      <hr class="divider">
+
+      <div class="scenario-selector">
+        <label>Improvement Scenario</label>
+        <div class="scenario-buttons">
+          <button class="scenario-btn" data-pct="0.02" onclick="setScenario(this)">
+            <span class="btn-pct">2%</span>
+            Conservative
+          </button>
+          <button class="scenario-btn active" data-pct="0.05" onclick="setScenario(this)">
+            <span class="btn-pct">5%</span>
+            Moderate
+          </button>
+          <button class="scenario-btn" data-pct="0.10" onclick="setScenario(this)">
+            <span class="btn-pct">10%</span>
+            Optimistic
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Outputs -->
+    <div class="output-panel animate-in">
+      <h2>Return on Investment</h2>
+
+      <div class="cost-items">
+        <div class="cost-item">
+          <div>
+            <div class="cost-item-label">Upfront implementation cost</div>
+            <div class="cost-item-sub">One-off project fee</div>
+          </div>
+          <div class="cost-item-value" id="projectCostDisplay">£2,000</div>
+        </div>
+        <div class="cost-item">
+          <div>
+            <div class="cost-item-label">Ongoing infrastructure</div>
+            <div class="cost-item-sub" id="tierInfo">Addingwell · 2M tier</div>
+          </div>
+          <div class="cost-item-value" id="addingwellCost">£90/mo</div>
+        </div>
+      </div>
+
+      <hr class="results-divider">
+
+      <div class="metrics-grid">
+        <div class="metric">
+          <span class="metric-label">Current Conversions</span>
+          <span class="metric-value" id="currentConversions">1,833</span>
+          <span class="metric-sub" id="currentConvSub">at £30.00 CPA</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Extra Conversions</span>
+          <span class="metric-value positive" id="extraConversions">+96</span>
+          <span class="metric-sub">for the same ad spend</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">New CPA</span>
+          <span class="metric-value" id="newCpa">£28.50</span>
+          <span class="metric-sub" id="cpaDrop">down from £30.00</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Monthly Ad Saving</span>
+          <span class="metric-value positive" id="monthlySaving">£2,750</span>
+          <span class="metric-sub">or reinvest for more volume</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Annual Net Gain</span>
+          <span class="metric-value big positive" id="annualGain">£31,920</span>
+          <span class="metric-sub">ad savings minus server costs</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Year 1 Net Gain</span>
+          <span class="metric-value positive" id="year1Gain">£29,920</span>
+          <span class="metric-sub">including setup cost</span>
+        </div>
+      </div>
+
+      <div class="payback-card">
+        <span class="payback-label">Payback period</span>
+        <span class="payback-value" id="payback">< 1 month</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="explainer animate-in">
+    <h2>How does server-side GTM improve advertising efficiency?</h2>
+    <p>Browser-based tracking is increasingly blocked by ad-blockers and privacy features like Safari's Intelligent Tracking Prevention (ITP), which deletes marketing cookies after just 7 days. This means a significant portion of your conversions are never reported back to platforms like Google Ads and Meta. Your automated bidding algorithms are making decisions with incomplete data.</p>
+    <p>Server-side GTM moves tracking to a first-party server environment, bypassing these browser restrictions. Conversion data reaches your ad platforms more reliably, bidding algorithms get a fuller picture of what's working, and your CPA drops as a result. The improvement is particularly pronounced for businesses with high Safari/mobile traffic or audiences that use ad-blockers heavily.</p>
+  </section>
+
+  <!-- Benefits -->
+  <section class="benefits animate-in">
+    <h2>Beyond Advertising ROI</h2>
+    <p class="benefits-intro">The calculator above focuses on direct ad spend savings. Server-side tracking delivers value well beyond that.</p>
+
+    <div class="benefits-grid">
+
+      <div class="benefit-card">
+        <div class="benefit-icon future">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>First-Party Cookie Advantage</h3>
+        <p>Safari deletes marketing cookies after 7 days. sGTM uses your own domain to set first-party cookies lasting up to 400 days. Users who click an ad but convert a week later get correctly attributed, instead of showing up as Direct traffic.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon privacy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>Enhanced Privacy Control</h3>
+        <p>sGTM acts as a secure gateway. You can redact or hash sensitive user data on your server before it reaches third-party platforms, giving you better control over GDPR compliance and internal privacy standards.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon performance">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3>Improved Site Performance</h3>
+        <p>Instead of loading multiple tracking scripts in the browser, sGTM sends a single signal from the client. The server distributes data to GA4, Google Ads, Meta, LinkedIn and others, reducing JavaScript bloat and improving page load times.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon enrichment">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Data Enrichment Infrastructure</h3>
+        <p>A server-side container lets you pull data from CRMs, databases and other business systems into your tracking pipeline, enriching what gets sent to ad platforms for better audience targeting and campaign optimisation.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon future">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Future-Proofing</h3>
+        <p>As the industry moves towards a cookieless future and browsers become more restrictive, sGTM ensures you own your data pipeline. This infrastructure is resilient against future browser changes that would break traditional tracking.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon attribution">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h3>Conversion API Support</h3>
+        <p>sGTM natively supports server-to-server connections like Meta Conversions API, Google Ads Enhanced Conversions, and LinkedIn Conversion API, delivering conversion data directly to ad platforms without relying on browser-based pixels.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="assumptions">
+    <h3>Assumptions</h3>
+    <p>The conservative (2%) scenario reflects minimal signal recovery. Moderate (5%) and optimistic (10%) reflect typical improvements seen with higher Safari/mobile traffic or significant ad-blocker usage. Monthly ad savings are calculated as the improvement percentage applied to total monthly ad spend. Annual net gain deducts 12 months of server costs. Year 1 net gain additionally deducts the one-off implementation cost.</p>
+    <p>Server costs are estimated from your GA4 event volume multiplied by 1.6 (to account for CDN requests). The calculator selects the most cost-effective Addingwell tier automatically. Pricing based on current Addingwell published rates.</p>
+  </div>
+
+</div>
+
+<footer class="page-footer">
+  <div class="logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 581.32 111.26" fill="#fff"><g><path d="M57.12,44.39c-1.94-2.53-4.27-4.64-6.97-6.3-4.12-2.54-8.88-3.82-14.14-3.82-6.66,0-12.83,1.74-18.35,5.18-5.5,3.42-9.87,8.13-12.99,14-3.1,5.85-4.68,12.32-4.68,19.24s1.57,12.96,4.67,18.86c3.11,5.9,7.44,10.71,12.89,14.29,5.47,3.6,11.68,5.42,18.45,5.42,5.26,0,10.02-1.29,14.14-3.82,2.7-1.66,5.03-3.77,6.97-6.3v8.47h15.22V0h-15.22V44.39Zm-5.45,11.27c3.62,4.37,5.45,10.21,5.45,17.34s-1.83,12.76-5.45,17.03c-3.6,4.26-8.62,6.33-15.36,6.33s-11.67-2.19-15.42-6.69c-3.77-4.52-5.67-10.27-5.67-17.11s1.93-12.5,5.73-16.86c3.81-4.37,8.83-6.49,15.37-6.49s11.74,2.11,15.35,6.46"/><path d="M137,39.45c-5.47-3.44-11.72-5.18-18.58-5.18s-13.31,1.77-18.88,5.25c-5.56,3.48-9.93,8.22-12.99,14.08-3.05,5.84-4.6,12.36-4.6,19.38,0,6.63,1.57,12.95,4.68,18.79,3.11,5.86,7.48,10.62,12.97,14.14,5.52,3.54,11.85,5.34,18.82,5.34s13.13-1.82,18.6-5.42c5.45-3.57,9.76-8.39,12.82-14.3,3.05-5.9,4.6-12.24,4.6-18.85s-1.55-13.39-4.6-19.23c-3.06-5.87-7.38-10.58-12.84-14.01m-18.58,56.9c-6.63,0-11.68-2.15-15.44-6.56-3.76-4.42-5.67-10.07-5.67-16.8s1.88-12.83,5.6-17.26c3.71-4.41,8.77-6.55,15.5-6.55s11.48,2.09,15.13,6.4c3.66,4.32,5.52,10.03,5.52,16.96s-1.86,12.6-5.54,17.12c-3.65,4.5-8.59,6.68-15.11,6.68"/><path d="M193.13,95.9c-3.82,0-6.47-.92-7.88-2.75-1.5-1.93-2.25-5.58-2.25-10.84V50.24h17.44v-14.16h-17.44V13.07h-14.31v14.52c0,2.85-.6,5.02-1.78,6.45-1.11,1.35-3.41,2.03-6.85,2.03h-4.6v14.16h12.18v34.93c0,8.76,1.93,15.24,5.73,19.26,3.82,4.04,9.71,6.09,17.51,6.09,3.36,0,6.99-.31,10.75-.92l1.22-.2v-14.47l-1.65,.24c-3.41,.49-6.13,.74-8.06,.74"/><path d="M245.31,.49C243.87,.16,242.17,0,240.26,0c-4.01,0-7.84,.88-11.39,2.62-3.59,1.77-6.51,4.42-8.7,7.9-2.19,3.47-3.3,7.6-3.3,12.27v13.28h-10.97v14.16h11.12v59.38h15.37V50.23h15.93v-14.16h-16.09v-12.68c0-3.33,.95-5.59,2.9-6.93,2.13-1.44,4.44-2.15,7.07-2.15,2.97,0,4.17,.38,4.62,.61l2.09,1.04V2.2l-.43-.43c-.53-.53-1.46-.9-3.19-1.29"/><path d="M305.5,39.45c-5.47-3.44-11.72-5.18-18.58-5.18s-13.31,1.77-18.88,5.25c-5.56,3.48-9.93,8.22-12.99,14.08-3.05,5.84-4.6,12.36-4.6,19.38,0,6.63,1.57,12.95,4.68,18.79,3.11,5.86,7.48,10.62,12.97,14.14,5.52,3.54,11.85,5.34,18.82,5.34s13.13-1.82,18.6-5.42c5.45-3.57,9.76-8.39,12.82-14.3,3.05-5.9,4.6-12.24,4.6-18.85s-1.55-13.39-4.6-19.23c-3.06-5.87-7.38-10.58-12.84-14.01m-18.58,56.9c-6.63,0-11.68-2.15-15.43-6.56-3.76-4.42-5.67-10.07-5.67-16.8s1.88-12.83,5.6-17.26c3.71-4.41,8.77-6.55,15.5-6.55s11.48,2.09,15.13,6.4c3.66,4.32,5.52,10.03,5.52,16.96s-1.86,12.6-5.54,17.12c-3.65,4.5-8.59,6.68-15.11,6.68"/><path d="M378.81,73.74c0,6.96-1.57,12.56-4.67,16.64-3.04,4.01-7.29,5.97-12.98,5.97-5.05,0-8.71-1.79-11.21-5.46-2.57-3.79-3.88-8.7-3.88-14.59V36.07h-15.37v43.24c0,9.3,2.3,17,6.84,22.9,4.63,6.01,11.26,9.06,19.71,9.06,7.02,0,12.57-1.63,16.47-4.84,2.03-1.66,3.73-3.36,5.08-5.1v8.28h15.22V36.07h-15.22v37.67Z"/><path d="M441.59,34.27c-7.03,0-12.57,1.63-16.47,4.84-2.03,1.67-3.73,3.38-5.08,5.14v-8.17h-15.37V109.61h15.37v-37.82c0-6.96,1.57-12.55,4.67-16.64,3.04-4.01,7.29-5.97,12.97-5.97,5.05,0,8.71,1.78,11.21,5.45,2.58,3.8,3.89,8.71,3.89,14.6v40.37h15.37v-43.38c0-9.3-2.3-17-6.84-22.9-4.63-6.01-11.26-9.06-19.71-9.06"/><path d="M533.03,44.39c-1.94-2.53-4.27-4.64-6.97-6.3-4.12-2.54-8.87-3.82-14.13-3.82-6.66,0-12.83,1.74-18.35,5.18-5.5,3.42-9.87,8.13-12.99,14-3.1,5.85-4.68,12.32-4.68,19.24s1.57,12.96,4.67,18.86c3.11,5.9,7.44,10.71,12.89,14.29,5.47,3.6,11.68,5.42,18.46,5.42,5.26,0,10.01-1.29,14.13-3.82,2.7-1.66,5.03-3.77,6.97-6.3v8.47h15.22V0h-15.22V44.39Zm-5.45,11.27c3.62,4.37,5.45,10.21,5.45,17.34s-1.83,12.76-5.45,17.03c-3.6,4.26-8.62,6.33-15.35,6.33s-11.67-2.19-15.42-6.69c-3.77-4.52-5.68-10.27-5.68-17.11s1.93-12.5,5.73-16.86c3.81-4.37,8.83-6.49,15.37-6.49s11.74,2.11,15.34,6.46"/><path d="M578.2,91.6h0c-2.08-2.14-4.65-3.22-7.65-3.22s-5.72,1.08-7.8,3.22c-2.07,2.13-3.11,4.76-3.11,7.85s1.05,5.57,3.11,7.7c2.08,2.13,4.7,3.22,7.8,3.22s5.57-1.08,7.65-3.22c2.07-2.13,3.12-4.71,3.12-7.7s-1.05-5.72-3.12-7.85"/></g></svg>
+  </div>
+  <span class="footer-text">dotfound.co.uk</span>
+</footer>
+
+<script>
+// Addingwell pricing tiers
+const TIERS = [
+  { limit: 2000000,  base: 90,  overage: 2.00 },
+  { limit: 10000000, base: 190, overage: 1.60 },
+  { limit: 25000000, base: 390, overage: 1.50 },
+  { limit: 50000000, base: 740, overage: 1.45 },
+  { limit: 75000000, base: 990, overage: 1.40 },
+];
+
+const PROJECT_COST = 2000;
+let currentPct = 0.05;
+
+function fmt(n) {
+  return new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 }).format(n);
+}
+
+function fmtCurrency(n, decimals) {
+  const d = decimals !== undefined ? decimals : (Math.abs(n) >= 1000 ? 0 : 2);
+  const prefix = n < 0 ? '-£' : '£';
+  return prefix + new Intl.NumberFormat('en-GB', {
+    minimumFractionDigits: d,
+    maximumFractionDigits: d,
+  }).format(Math.abs(n));
+}
+
+function formatTierLimit(limit) {
+  if (limit >= 1000000) return (limit / 1000000) + 'M';
+  return fmt(limit);
+}
+
+function getAddingwellCost(gaEvents) {
+  const requests = gaEvents * 1.6;
+  let bestTier = TIERS[0];
+  for (let i = 0; i < TIERS.length; i++) {
+    if (requests <= TIERS[i].limit) {
+      bestTier = TIERS[i];
+      break;
+    }
+    if (i < TIERS.length - 1) {
+      const stayCost = TIERS[i].base + Math.ceil((requests - TIERS[i].limit) / 100000) * TIERS[i].overage;
+      const upgradeCost = TIERS[i + 1].base;
+      if (stayCost <= upgradeCost) {
+        bestTier = TIERS[i];
+        break;
+      } else {
+        bestTier = TIERS[i + 1];
+        continue;
+      }
+    } else {
+      bestTier = TIERS[i];
+    }
+  }
+  let cost = bestTier.base;
+  if (requests > bestTier.limit) {
+    cost += Math.ceil((requests - bestTier.limit) / 100000) * bestTier.overage;
+  }
+  return {
+    cost: Math.round(cost * 100) / 100,
+    tier: bestTier,
+    requests: Math.round(requests),
+  };
+}
+
+function setScenario(btn) {
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPct = parseFloat(btn.dataset.pct);
+  calculate();
+}
+
+function calculate() {
+  const adSpend = parseFloat(document.getElementById('adSpend').value) || 0;
+  const cpa = parseFloat(document.getElementById('cpa').value) || 0.01;
+  const gaEvents = parseFloat(document.getElementById('gaEvents').value) || 0;
+
+  // Update slider displays
+  document.getElementById('adSpendDisplay').textContent = fmtCurrency(adSpend, 0);
+  document.getElementById('cpaDisplay').textContent = fmtCurrency(cpa, 2);
+  document.getElementById('gaEventsDisplay').textContent = fmt(gaEvents);
+
+  // Addingwell cost
+  const aw = getAddingwellCost(gaEvents);
+  document.getElementById('addingwellCost').textContent = fmtCurrency(aw.cost, 0) + '/mo';
+  document.getElementById('tierInfo').textContent = 'Addingwell \u00B7 ' + formatTierLimit(aw.tier.limit) + ' tier';
+  document.getElementById('projectCostDisplay').textContent = fmtCurrency(PROJECT_COST, 0);
+
+  const monthlyCost = aw.cost;
+
+  // Derive conversions from ad spend and CPA
+  const currentConversions = adSpend / cpa;
+
+  // Scenario calc
+  const newCpa = cpa * (1 - currentPct);
+  const newConversions = adSpend / newCpa;
+  const extraConversions = newConversions - currentConversions;
+  const monthlySaving = adSpend * currentPct;
+  const annualNetGain = (monthlySaving * 12) - (monthlyCost * 12);
+  const year1NetGain = annualNetGain - PROJECT_COST;
+
+  document.getElementById('currentConversions').textContent = fmt(Math.round(currentConversions));
+  document.getElementById('currentConvSub').textContent = 'at ' + fmtCurrency(cpa, 2) + ' CPA';
+  document.getElementById('extraConversions').textContent = '+' + fmt(Math.round(extraConversions));
+  document.getElementById('newCpa').textContent = fmtCurrency(newCpa, 2);
+  document.getElementById('cpaDrop').textContent = 'down from ' + fmtCurrency(cpa, 2);
+  document.getElementById('monthlySaving').textContent = fmtCurrency(monthlySaving, 0);
+  document.getElementById('annualGain').textContent = fmtCurrency(annualNetGain, 0);
+  document.getElementById('year1Gain').textContent = fmtCurrency(year1NetGain, 0);
+
+  // Colour logic
+  const annualEl = document.getElementById('annualGain');
+  const year1El = document.getElementById('year1Gain');
+  annualEl.className = 'metric-value big ' + (annualNetGain >= 0 ? 'positive' : 'negative');
+  year1El.className = 'metric-value ' + (year1NetGain >= 0 ? 'positive' : 'negative');
+
+  // Payback
+  let paybackText = '\u2014';
+  if (monthlySaving > 0) {
+    const months = PROJECT_COST / monthlySaving;
+    if (months < 0.5) paybackText = 'Nearly instant';
+    else if (months < 1) paybackText = '< 1 month';
+    else if (months < 2) paybackText = '~' + months.toFixed(1) + ' months';
+    else paybackText = '~' + Math.round(months) + ' months';
+  }
+  document.getElementById('payback').textContent = paybackText;
+}
+
+// Bind sliders
+['adSpend', 'cpa', 'gaEvents'].forEach(id => {
+  document.getElementById(id).addEventListener('input', calculate);
+});
+
+// Initial
+calculate();
+</script>
+
+</body>
+</html>
