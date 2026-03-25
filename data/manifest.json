@@ -14,6 +14,13 @@
       "date": "2026-03-24",
       "has_password": true,
       "password": "nvc-demo"
+    },
+    {
+      "slug": "c44a82437f07",
+      "title": "Server Side GTM Proposal",
+      "type": "proposal",
+      "date": "2026-03-25",
+      "has_password": false
     }
   ]
 }
