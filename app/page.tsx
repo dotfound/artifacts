@@ -105,20 +105,6 @@ export default function IndexPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-[rgba(255,255,255,0.06)]">
-        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-6 flex items-center justify-between">
-          <span className="text-[rgba(255,255,255,0.25)] text-xs font-light">dotfound</span>
-          <a
-            href="https://dotfound.co.uk"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[rgba(255,255,255,0.25)] text-xs font-light hover:text-[rgba(255,255,255,0.5)] transition-colors"
-          >
-            dotfound.co.uk
-          </a>
-        </div>
-      </footer>
     </main>
   )
 }
