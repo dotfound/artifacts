@@ -1,5 +1,5 @@
+import Link from 'next/link'
 import manifestData from '@/data/manifest.json'
-import ArtefactGrid from './ArtefactGrid'
 
 interface Artefact {
   slug: string
@@ -7,6 +7,19 @@ interface Artefact {
   type: string
   date: string
   has_password: boolean
+}
+
+const typeConfig: Record<string, { label: string; bg: string }> = {
+  dashboard: { label: 'Dashboard', bg: 'bg-[rgba(34,211,238,0.12)]' },
+  report: { label: 'Report', bg: 'bg-[rgba(206,228,255,0.12)]' },
+  proposal: { label: 'Proposal', bg: 'bg-[rgba(255,255,255,0.08)]' },
+  presentation: { label: 'Presentation', bg: 'bg-[rgba(255,107,107,0.12)]' },
+  calculator: { label: 'Calculator', bg: 'bg-[rgba(34,211,238,0.12)]' },
+  other: { label: 'Other', bg: 'bg-[rgba(255,255,255,0.06)]' },
+}
+
+function getTypeConfig(type: string) {
+  return typeConfig[type] ?? typeConfig.other
 }
 
 export default function IndexPage() {
@@ -28,7 +41,67 @@ export default function IndexPage() {
 
       {/* Artefact grid */}
       <div className="max-w-6xl mx-auto px-6 lg:px-10 pb-16">
-        <ArtefactGrid artefacts={artefacts} />
+        {artefacts.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-[rgba(255,255,255,0.3)] text-sm font-light">No artefacts published yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {artefacts.map((a, i) => {
+              const tc = getTypeConfig(a.type)
+              return (
+                <Link
+                  key={a.slug}
+                  href={`/${a.slug}`}
+                  className="animate-in group relative rounded-lg overflow-hidden border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.07)] hover:border-[rgba(167,139,250,0.3)] transition-all duration-300"
+                  style={{ animationDelay: `${i * 0.06}s` }}
+                >
+                  {/* Live iframe preview */}
+                  <div className="relative w-full aspect-[16/10] overflow-hidden bg-[rgba(0,0,0,0.2)]">
+                    <iframe
+                      src={`/a/${a.slug}.html`}
+                      title={a.title}
+                      className="w-[200%] h-[200%] origin-top-left pointer-events-none"
+                      style={{ transform: 'scale(0.5)' }}
+                      loading="lazy"
+                      sandbox="allow-scripts allow-same-origin"
+                      tabIndex={-1}
+                    />
+
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#002040]/0 group-hover:bg-[#002040]/50 transition-all duration-300">
+                      <div className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-white text-sm font-medium">
+                        <span>View</span>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card info */}
+                  <div className="px-4 py-3.5">
+                    <h2 className="text-white font-medium text-sm leading-snug group-hover:text-[#22D3EE] transition-colors duration-200 truncate">
+                      {a.title}
+                    </h2>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-[0.65rem] font-medium tracking-wide text-white ${tc.bg}`}>
+                        {tc.label}
+                      </span>
+                      <span className="text-[rgba(255,255,255,0.3)] text-xs font-light">
+                        {new Date(a.date).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </div>
     </main>
   )
