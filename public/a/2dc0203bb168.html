@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homeschool Hive - Technical & Structural Analysis</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-2: #22262f;
+    --border: #2e3340;
+    --text: #e1e4ea;
+    --text-muted: #8b91a0;
+    --accent: #f59e0b;
+    --accent-dim: rgba(245, 158, 11, 0.1);
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --red: #ef4444;
+    --purple: #a855f7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-amber { background: var(--accent-dim); color: var(--accent); }
+  .tag-green { background: rgba(34,197,94,0.1); color: var(--green); }
+  .tag-blue { background: rgba(59,130,246,0.1); color: var(--blue); }
+  .tag-red { background: rgba(239,68,68,0.1); color: var(--red); }
+  .tag-purple { background: rgba(168,85,247,0.1); color: var(--purple); }
+
+  section {
+    margin-bottom: 3rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  h2 .num {
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card p:last-child { margin-bottom: 0; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+
+  .sitemap {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+
+  .sitemap .dir { color: var(--accent); font-weight: 600; }
+  .sitemap .page { color: var(--text); }
+  .sitemap .note { color: var(--text-muted); font-style: italic; }
+  .sitemap .indent { padding-left: 1.5rem; display: block; }
+  .sitemap .indent-2 { padding-left: 3rem; display: block; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .metric {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .metric-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+
+  .flow-step {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+
+  .flow-arrow {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+  }
+
+  .highlight-box {
+    background: var(--accent-dim);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1rem 0;
+  }
+
+  .highlight-box p {
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  ul li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .two-sided {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .two-sided > div {
+    padding: 1.5rem;
+  }
+
+  .two-sided > div:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .parent-label { color: var(--green); }
+  .leader-label { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Homeschool Hive - Site Analysis</h1>
+  <p>Technical breakdown, information architecture, messaging strategy, and feature audit. Crawled 26 March 2026. Version 1.16.4.</p>
+</header>
+
+<!-- 1. EXECUTIVE SUMMARY -->
+<section>
+  <h2><span class="num">01</span> Executive Summary</h2>
+  <div class="card">
+    <p>Homeschool Hive is a US-focused two-sided marketplace connecting home-educating families with community leaders (co-op organisers, activity providers, tutors). Built by Carl VanderLaan, a software engineer and homeschool dad based in Fort Myers, FL. Operated by The Hive Network, LLC.</p>
+    <p>The platform is a Next.js app with Tailwind CSS, Mapbox for geolocation, Stripe for payments, and PostHog for analytics. It uses a freemium model where the platform is free for both sides, monetising via a 10% platform fee on paid event tickets (passed to the attendee, not the leader). Stripe processing (2.9% + $0.30) sits on top.</p>
+    <p>Current traction: 11,400+ community events listed, ~1,550 searches/month, 181 visitors/month (self-reported on the for-leaders page). US market only but geo-detects UK visitors (showed "Near Horsham, England" on visit). Spanish language option available.</p>
+  </div>
+</section>
+
+<!-- 2. TECH STACK -->
+<section>
+  <h2><span class="num">02</span> Tech Stack</h2>
+  <div class="card">
+    <table>
+      <tr><th style="width:180px">Layer</th><th>Technology</th></tr>
+      <tr><td>Framework</td><td>Next.js (App Router) - confirmed by <code>/_next/static/</code> asset paths</td></tr>
+      <tr><td>Styling</td><td>Tailwind CSS (utility classes on body: <code>bg-gray-50 dark:bg-neutral-950</code>)</td></tr>
+      <tr><td>Maps</td><td>Mapbox GL JS (groups and leaders pages, interactive demand heatmap)</td></tr>
+      <tr><td>Payments</td><td>Stripe (mentioned in pricing, secure checkout)</td></tr>
+      <tr><td>Analytics</td><td>PostHog (us.i.posthog.com), Google Tag Manager, Facebook Pixel</td></tr>
+      <tr><td>Assets CDN</td><td>assets.homeschoolhive.co (separate subdomain for static assets)</td></tr>
+      <tr><td>Protocol</td><td>HTTP/2</td></tr>
+      <tr><td>Auth</td><td>Email/password + Google, Facebook, Apple OAuth</td></tr>
+      <tr><td>Help/KB</td><td>kb.homeschoolhive.co (separate subdomain)</td></tr>
+      <tr><td>Status</td><td>status.homeschoolhive.co (separate status page)</td></tr>
+      <tr><td>Merch</td><td>merch.homeschoolhive.co (separate store)</td></tr>
+      <tr><td>Versioning</td><td>Semver in footer: v1.16.4 (e63d6ed) linked to changelog</td></tr>
+      <tr><td>i18n</td><td>English + Espa&ntilde;ol, language selector in footer</td></tr>
+      <tr><td>Theming</td><td>Auto / Light / Dark mode toggle in footer</td></tr>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>Observation:</strong> 32 external scripts loaded on the homepage. The separate assets CDN suggests either Vercel or a custom deployment with a CDN layer (CloudFront, Cloudflare, etc.). The Mapbox access token is exposed client-side (standard for Mapbox GL JS, but worth noting the account is under "vanluda").</p>
+  </div>
+</section>
+
+<!-- 3. INFORMATION ARCHITECTURE -->
+<section>
+  <h2><span class="num">03</span> Information Architecture</h2>
+
+  <div class="sitemap">
+    <span class="dir">homeschoolhive.co/</span>
+    <span class="indent page">/ <span class="note">- Homepage (search, how it works, leader CTA, testimonial)</span></span>
+    <span class="indent page">/for-parents <span class="note">- Parent landing page (pain points, features, FAQ)</span></span>
+    <span class="indent page">/for-leaders <span class="note">- Leader landing page (demand data, live map, features)</span></span>
+    <span class="indent page">/features <span class="note">- Full feature showcase (tabbed, with testimonials)</span></span>
+    <span class="indent page">/pricing <span class="note">- Pricing calculator + FAQ</span></span>
+    <span class="indent page">/about <span class="note">- Founder story (Carl &amp; Holly VanderLaan)</span></span>
+    <span class="indent dir">/events</span>
+    <span class="indent-2 page">/events <span class="note">- Event search (keyword, location, category, date, free/paid)</span></span>
+    <span class="indent dir">/groups</span>
+    <span class="indent-2 page">/groups <span class="note">- Group search (map, type, faith, age, free/paid)</span></span>
+    <span class="indent-2 page">/groups/create <span class="note">- List your community</span></span>
+    <span class="indent-2 page">/groups/{state} <span class="note">- State directory (all 50 states)</span></span>
+    <span class="indent-2 page">/groups/{state}/{city} <span class="note">- City directory</span></span>
+    <span class="indent dir">/guides</span>
+    <span class="indent-2 page">/guides <span class="note">- State-specific homeschool legal guides</span></span>
+    <span class="indent dir">/tools</span>
+    <span class="indent-2 page">/tools/letter-of-intent <span class="note">- Free: generates state-specific letter</span></span>
+    <span class="indent-2 page">/tools/homeschool-funding <span class="note">- Free: ESA/voucher/tax credit map for all 50 states</span></span>
+    <span class="indent dir">/blog</span>
+    <span class="indent-2 page">/blog <span class="note">- Content hub (Special Needs, Getting Started, Activities)</span></span>
+    <span class="indent-2 page">/blog/{slug} <span class="note">- Individual posts</span></span>
+    <span class="indent dir">/legal</span>
+    <span class="indent-2 page">/legal/terms | /legal/privacy | /legal/refund-policy</span>
+    <span class="indent-2 page">/legal/acceptable-use | /legal/cookie-policy | /legal/data-deletion</span>
+    <span class="indent-2 page">/legal/accessibility</span>
+    <span class="indent dir">/auth</span>
+    <span class="indent-2 page">/register <span class="note">- Signup (email + Google/Facebook/Apple)</span></span>
+    <span class="indent-2 page">/login <span class="note">- Sign in</span></span>
+    <span class="indent dir">External subdomains</span>
+    <span class="indent-2 page">kb.homeschoolhive.co <span class="note">- Help centre + changelog</span></span>
+    <span class="indent-2 page">status.homeschoolhive.co <span class="note">- Uptime monitoring</span></span>
+    <span class="indent-2 page">merch.homeschoolhive.co <span class="note">- Branded merchandise store</span></span>
+  </div>
+</section>
+
+<!-- 4. TWO-SIDED MESSAGING -->
+<section>
+  <h2><span class="num">04</span> Two-Sided Messaging Strategy</h2>
+
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div class="two-sided">
+      <div>
+        <span class="section-label parent-label">Parents (Demand Side)</span>
+        <h3>Primary Message</h3>
+        <p>"Find your homeschool community" - discovery and convenience</p>
+
+        <h3 style="margin-top: 1rem;">Pain Points Addressed</h3>
+        <ul>
+          <li>Scattered info across Facebook, email, texts</li>
+          <li>Difficulty finding quality local activities</li>
+          <li>Missing events (full or already passed)</li>
+          <li>No centralised calendar</li>
+          <li>Cash-at-the-door payment hassle</li>
+        </ul>
+
+        <h3 style="margin-top: 1rem;">Value Proposition</h3>
+        <ul>
+          <li>Search by location, category, age group</li>
+          <li>One-click RSVP</li>
+          <li>Calendar sync (Google, Apple, Outlook)</li>
+          <li>Waitlist alerts</li>
+          <li>Secure online payments with receipts</li>
+          <li>Unified dashboard for all communities</li>
+        </ul>
+
+        <h3 style="margin-top: 1rem;">CTAs</h3>
+        <ul>
+          <li>"Find Events Near Me"</li>
+          <li>"Browse Events & Classes Near Me"</li>
+          <li>"Create Free Account"</li>
+        </ul>
+      </div>
+      <div>
+        <span class="section-label leader-label">Leaders (Supply Side)</span>
+        <h3>Primary Message</h3>
+        <p>"Families are searching. Show them you exist." - demand-led urgency</p>
+
+        <h3 style="margin-top: 1rem;">Pain Points Addressed</h3>
+        <ul>
+          <li>Burnout from manual admin</li>
+          <li>Chasing payments (cash, Venmo)</li>
+          <li>Cross-posting across platforms</li>
+          <li>Managing RSVPs manually</li>
+          <li>No visibility into local demand</li>
+        </ul>
+
+        <h3 style="margin-top: 1rem;">Value Proposition</h3>
+        <ul>
+          <li>Live demand map showing family searches</li>
+          <li>Event management with capacity + RSVP</li>
+          <li>Stripe payments direct to their account</li>
+          <li>Member management and roles</li>
+          <li>Community feed (post once, reach everyone)</li>
+          <li>Free forever - no monthly fees</li>
+        </ul>
+
+        <h3 style="margin-top: 1rem;">CTAs</h3>
+        <ul>
+          <li>"List your community free"</li>
+          <li>"See the demand near you"</li>
+          <li>"Start Your Free Community"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>Smart move:</strong> The for-leaders page shows live search demand data (1,556 searches in 30 days, 181 visitors) and an interactive Mapbox heatmap of where families are searching. This is a strong supply-side acquisition tactic - showing unmet demand to incentivise leaders to list. Top cities with unmet demand are shown (Fort Myers, Boston, Muskegon) with direct "Start a community here" links pre-populated with city/state params.</p>
+  </div>
+</section>
+
+<!-- 5. FEATURE AUDIT -->
+<section>
+  <h2><span class="num">05</span> Feature Audit (from /features page)</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Community Management</h3>
+      <span class="tag tag-green">Live</span>
+      <ul style="margin-top: 0.75rem;">
+        <li>Public or private communities</li>
+        <li>Custom description and guidelines</li>
+        <li>Member approval flow</li>
+        <li>Visibility controls</li>
+        <li>Community branding</li>
+        <li>Discovery (searchable directory)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Event Management</h3>
+      <span class="tag tag-green">Live</span>
+      <ul style="margin-top: 0.75rem;">
+        <li>RSVP + ticketing (free and paid)</li>
+        <li>Flexible ticket types (adult, child, family)</li>
+        <li>Capacity limits + automatic spot tracking</li>
+        <li>Waitlist management</li>
+        <li>Event add-ons</li>
+        <li>Visibility controls</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Calendar & Organisation</h3>
+      <span class="tag tag-green">Live</span>
+      <ul style="margin-top: 0.75rem;">
+        <li>Unified calendar across communities</li>
+        <li>Calendar sync (Google, Apple, Outlook)</li>
+        <li>Automated reminders</li>
+        <li>At-a-glance event planning view</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Payments</h3>
+      <span class="tag tag-green">Live</span>
+      <ul style="margin-top: 0.75rem;">
+        <li>Event ticket payments via Stripe</li>
+        <li>Membership dues (monthly/annual)</li>
+        <li>Scholarship/invoice payments</li>
+        <li>Refund management</li>
+        <li>Revenue reporting</li>
+        <li>Auto-renew with reminders</li>
+      </ul>
+      <p style="margin-top: 0.5rem;"><span class="tag tag-amber">Planned</span> Free trials and grace periods</p>
+    </div>
+
+    <div class="card">
+      <h3>Communication</h3>
+      <span class="tag tag-green">Live</span>
+      <ul style="margin-top: 0.75rem;">
+        <li>Community feed (announcements)</li>
+        <li>Automatic email notifications</li>
+        <li>Leader controls on communications</li>
+        <li>Reactions and comments</li>
+        <li>Engagement visibility</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Free Tools (Lead Gen)</h3>
+      <span class="tag tag-blue">SEO Play</span>
+      <ul style="margin-top: 0.75rem;">
+        <li>State-specific homeschool guides</li>
+        <li>Letter of Intent generator</li>
+        <li>Homeschool Funding Map (all 50 states)</li>
+        <li>Blog (Special Needs, Getting Started, Field Trips)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6. PRICING MODEL -->
+<section>
+  <h2><span class="num">06</span> Pricing Model</h2>
+
+  <div class="card">
+    <div class="grid-2">
+      <div>
+        <h3>Free Tier (Everyone)</h3>
+        <p>No credit card needed.</p>
+        <ul style="margin-top: 0.75rem;">
+          <li>Unlimited communities & members</li>
+          <li>Unlimited free events</li>
+          <li>RSVPs, favourites & reminders</li>
+          <li>Member roles & permissions</li>
+          <li>Private community feed</li>
+          <li>Calendar sync</li>
+          <li>Waitlist management</li>
+          <li>Email notifications</li>
+        </ul>
+      </div>
+      <div>
+        <h3>When You Collect Payments</h3>
+        <p>Fees added at checkout (attendee pays).</p>
+        <ul style="margin-top: 0.75rem;">
+          <li>10% platform fee</li>
+          <li>Stripe processing: 2.9% + $0.30</li>
+        </ul>
+        <div style="margin-top: 1rem; background: var(--surface-2); padding: 1rem; border-radius: 6px;">
+          <p><strong>Example on a $20 ticket:</strong></p>
+          <p>Platform fee (10%): $2.00</p>
+          <p>Stripe fee: $0.97</p>
+          <p>Attendee pays: $22.97</p>
+          <p><strong style="color: var(--green);">Leader receives: $20.00 (full ticket price)</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>Key insight:</strong> The pricing is entirely transaction-based. Leaders never pay anything - the fee is passed to the attendee. This removes all friction from the supply side. The interactive pricing slider on the page lets leaders see exactly what attendees would pay at different price points. Also mentions "scholarship invoicing" as a payment type, suggesting they handle grant/ESA fund payments.</p>
+  </div>
+</section>
+
+<!-- 7. SEO & CONTENT STRATEGY -->
+<section>
+  <h2><span class="num">07</span> SEO & Content Strategy</h2>
+
+  <div class="card">
+    <h3>Programmatic SEO Pages</h3>
+    <p>The footer contains a massive internal linking structure. Every US state has a dedicated groups page (<code>/groups/{state}</code>) and popular cities get their own pages (<code>/groups/{state}/{city}</code>). These are tabbed by type: "Homeschool Communities", "Events & Classes", "Co-ops", "Programs". Each state link has varied anchor text (e.g., "Classical groups", "Charlotte Mason groups", "STEM groups", "Play-based groups") - likely rotating descriptors for keyword variation.</p>
+
+    <h3 style="margin-top: 1rem;">Free Tools as Lead Magnets</h3>
+    <p>The funding map is a standout piece. It covers all 50 states with ESA amounts, voucher programs, tax credits, and federal programs (529, Coverdell, Education Freedom Tax Credit). This is a genuinely useful resource that targets high-intent searches like "does my state pay for homeschooling" or "homeschool ESA {state}". The Letter of Intent generator is similarly targeted at parents just starting their homeschool journey.</p>
+
+    <h3 style="margin-top: 1rem;">Blog Categories</h3>
+    <ul>
+      <li>Special Needs (e.g., "Is Homeschooling Better for Kids with ADHD?")</li>
+      <li>Getting Started (e.g., "Can You Start Homeschooling Mid-Year?")</li>
+      <li>Activities & Field Trips (e.g., location-specific guides)</li>
+    </ul>
+    <p style="margin-top: 0.5rem;">Blog posts are well-structured with read times (8-9 min), category tags, and publication dates. Content is educational and question-based, targeting long-tail informational queries.</p>
+  </div>
+</section>
+
+<!-- 8. SEARCH & DISCOVERY UX -->
+<section>
+  <h2><span class="num">08</span> Search & Discovery UX</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Events Search</h3>
+      <ul>
+        <li>Keyword search</li>
+        <li>Location (city or address) with geolocation</li>
+        <li>Category filter (dropdown)</li>
+        <li>Date filter: Any, Today, Tomorrow, This Weekend, Pick a Date</li>
+        <li>Price filter: All, Free, Paid</li>
+        <li>"More" filters button (expandable)</li>
+        <li>Map toggle ("Show map")</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Groups Search</h3>
+      <ul>
+        <li>Keyword search</li>
+        <li>Location (city or address) with geolocation</li>
+        <li>Age filter (dropdown)</li>
+        <li>Type: Co-op, Field Trip Group, Activity Group, Playgroup, Enrichment</li>
+        <li>Faith filter: Christian (currently only option with data)</li>
+        <li>Price: All, Free, Paid</li>
+        <li>Sort: Relevance, Distance, Members, Name</li>
+        <li>Integrated Mapbox map (always visible)</li>
+        <li>"Notify me when communities appear" (email capture for empty results)</li>
+        <li>"Missing your favourite group? Invite them" (viral growth loop)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>Nice detail:</strong> When a groups search returns zero results, they show two smart CTAs instead of a dead end: a notification signup and a referral/invite prompt. This captures demand signal even when there's no supply, and nudges users to recruit their existing groups onto the platform.</p>
+  </div>
+</section>
+
+<!-- 9. SIGNUP FLOW -->
+<section>
+  <h2><span class="num">09</span> Registration Flow</h2>
+
+  <div class="card">
+    <div class="flow">
+      <div class="flow-step">First Name + Last Name</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">Email</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">Password (8+ chars, upper, lower, number)</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">Create Account</div>
+    </div>
+    <p>Single-page form. No role selection (parent vs leader) at signup. OAuth options: Google, Facebook, Apple. Legal acceptance is inline (Terms, Privacy, Cookies, Acceptable Use, Refund). Redirect parameter in login URL suggests post-auth routing.</p>
+
+    <p style="margin-top: 0.75rem;">No email verification step visible in the flow. Password validation shown as a real-time checklist. Hidden fields suggest CSRF protection and redirect handling.</p>
+  </div>
+</section>
+
+<!-- 10. NAVIGATION & IA -->
+<section>
+  <h2><span class="num">10</span> Navigation Design</h2>
+
+  <div class="card">
+    <h3>Primary Nav</h3>
+    <p>Five items: Events | Groups | Resources (mega menu) | About | Sign In / Get Started</p>
+
+    <h3 style="margin-top: 1rem;">Mega Menu (Resources)</h3>
+    <p>This is the most interesting navigation element. It's split into three columns:</p>
+    <ul>
+      <li><strong>Parents column:</strong> Getting Started Guides, Letter of Intent Generator (tagged "Free Tool"), Homeschool Funding Map (tagged "Free Tool"), Features, Homeschool Events, Local Communities</li>
+      <li><strong>Leaders column:</strong> Families Near You, Features, How It Works, List Your Community</li>
+      <li><strong>Recent Posts column:</strong> Three latest blog posts with thumbnails, categories, dates, and read times</li>
+    </ul>
+    <p style="margin-top: 0.75rem;">The parent/leader split in the mega menu is clean and well-executed. Each item has a title + subtitle description. Free tools are prominently tagged.</p>
+
+    <h3 style="margin-top: 1rem;">Footer</h3>
+    <p>Four sections: Explore (7 links), Resources (4 links), Company (5 links), Legal (7 links + CCPA buttons). Plus the programmatic state/city directory with tabbed categories. Language toggle. Theme toggle. Version number linked to changelog.</p>
+  </div>
+</section>
+
+<!-- 11. ACCESSIBILITY & COMPLIANCE -->
+<section>
+  <h2><span class="num">11</span> Accessibility & Compliance</h2>
+
+  <div class="card">
+    <h3>Accessibility</h3>
+    <ul>
+      <li>"Skip to main content" link present</li>
+      <li>Semantic HTML: banner, nav, main, contentinfo landmarks</li>
+      <li>ARIA labels on navigation ("Main navigation")</li>
+      <li>Form labels present on inputs</li>
+      <li>Alt text on images</li>
+      <li>Dedicated /legal/accessibility page</li>
+      <li>Keyboard shortcut for notifications (alt+T)</li>
+    </ul>
+
+    <h3 style="margin-top: 1rem;">Legal/Privacy</h3>
+    <ul>
+      <li>CCPA compliance: "Do Not Sell or Share" buttons in footer</li>
+      <li>Cookie Policy with preference controls</li>
+      <li>Data Deletion page (GDPR-adjacent)</li>
+      <li>Full legal suite: Terms, Privacy, Refund, Acceptable Use, Cookie, Accessibility</li>
+      <li>Privacy messaging on homepage: "We never sell your data"</li>
+      <li>Trust signals: "Bank-level encryption", "Powered by Stripe"</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 12. RELEVANCE TO FIELDWISE -->
+<section>
+  <h2><span class="num">12</span> Relevance to Your Project</h2>
+
+  <div class="card">
+    <h3>What's directly transferable to a UK home ed activities directory</h3>
+    <ul>
+      <li><strong>Two-sided split (Parents / Leaders)</strong> - clear messaging for each audience, separate landing pages, but a single registration flow</li>
+      <li><strong>Event search UX</strong> - location + category + date + price filters, map integration, geolocation</li>
+      <li><strong>Transaction-based pricing</strong> - free to list, fee on paid transactions only, passed to the buyer</li>
+      <li><strong>Empty state handling</strong> - notification signup + invite/referral prompt when no results</li>
+      <li><strong>Programmatic SEO</strong> - auto-generated pages per region/city with varied anchor text</li>
+      <li><strong>Free tools as lead gen</strong> - genuinely useful resources that target high-intent searches</li>
+      <li><strong>Supply-side demand data</strong> - showing providers where families are searching (the live map)</li>
+      <li><strong>Interactive pricing calculator</strong> - transparency builds trust with providers</li>
+    </ul>
+
+    <h3 style="margin-top: 1rem;">What you'd likely defer (Phase 2+)</h3>
+    <ul>
+      <li><strong>Communities/groups</strong> - they've built full community management (feeds, member roles, private groups). This is a big build. Events and classes directory comes first.</li>
+      <li><strong>Membership dues/recurring billing</strong> - complex Stripe integration</li>
+      <li><strong>Community feed/messaging</strong> - social features are engagement-heavy but not core to discovery</li>
+    </ul>
+
+    <h3 style="margin-top: 1rem;">What's US-specific (needs UK adaptation)</h3>
+    <ul>
+      <li>State guides and legal requirements - would become LA/council-specific in the UK</li>
+      <li>ESA/voucher funding map - no direct UK equivalent, but EHE guidelines vary by council</li>
+      <li>Letter of Intent generator - UK equivalent would be de-registration letter templates</li>
+      <li>Faith filter on groups - less prominent in UK home ed but still relevant</li>
+    </ul>
+  </div>
+</section>
+
+<footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem;">
+  <p>Analysis prepared for dotfound. Data sourced from homeschoolhive.co on 26 March 2026. All information based on publicly accessible pages.</p>
+</footer>
+
+</body>
+</html>
