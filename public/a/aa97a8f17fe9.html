@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Group Analysis — Fieldwise Research</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #002040;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --coral: #FF6B6B;
+  --cyan: #22D3EE;
+  --purple: #a78bfa;
+  --light-blue: #cee4ff;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-body: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --border: rgba(255, 255, 255, 0.09);
+  --font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-family); background: var(--navy); color: var(--text-body); overflow: hidden; }
+
+.slides-wrapper {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+.slides-wrapper::-webkit-scrollbar { width: 0; }
+.slides-wrapper { scrollbar-width: none; }
+
+.slide {
+  height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide-content { max-width: 900px; width: 100%; }
+.slide--wide .slide-content { max-width: 1100px; }
+.slide--centre { text-align: center; }
+.slide--centre .slide-content { display: flex; flex-direction: column; align-items: center; }
+.slide--centre p { margin-left: auto; margin-right: auto; }
+
+.slide h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 600;
+  color: var(--text-primary); line-height: 1.1;
+  letter-spacing: -0.025em; margin-bottom: 1rem;
+}
+.slide h2 {
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 500;
+  color: var(--text-primary); line-height: 1.15;
+  letter-spacing: -0.02em; margin-bottom: 1rem;
+}
+.slide h3 {
+  font-size: 1.1rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem;
+}
+.slide p {
+  font-size: 1.1rem; line-height: 1.7; color: var(--text-body);
+  max-width: 650px; margin-bottom: 1rem;
+}
+.slide .subtitle {
+  font-size: 1rem; color: var(--text-muted); font-weight: 400;
+}
+.slide .accent { color: var(--cyan); }
+.slide .accent-coral { color: var(--coral); }
+.slide .accent-purple { color: var(--purple); }
+.slide .accent-green { color: var(--green); }
+.slide .accent-amber { color: var(--amber); }
+
+.slide .big-number {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 600; color: var(--coral);
+  line-height: 1; letter-spacing: -0.03em; margin-bottom: 0.5rem;
+}
+
+.callout {
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 3px solid var(--coral);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-body);
+  text-align: left;
+}
+.callout--cyan { border-left-color: var(--cyan); }
+.callout--purple { border-left-color: var(--purple); }
+.callout--green { border-left-color: var(--green); }
+.callout--amber { border-left-color: var(--amber); }
+.callout strong { color: var(--text-primary); font-weight: 500; }
+
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem; margin-top: 2rem; text-align: left;
+}
+.slide-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-lg); padding: 1.5rem;
+}
+.slide-card h3 { font-size: 1rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.5rem; }
+.slide-card p { font-size: 0.9rem; color: var(--text-body); margin-bottom: 0; max-width: none; }
+.slide-card .card-icon { font-size: 1.5rem; margin-bottom: 0.75rem; display: block; }
+
+.quote {
+  font-style: italic; font-size: 1.15rem; color: var(--text-primary);
+  border-left: 3px solid var(--purple); padding-left: 1.5rem;
+  margin: 1.5rem 0; line-height: 1.7; max-width: 650px;
+}
+.quote-source {
+  font-style: normal; font-size: 0.85rem; color: var(--text-muted);
+  margin-top: 0.5rem; display: block;
+}
+
+.evidence-list {
+  list-style: none; padding: 0; margin-top: 1rem; text-align: left;
+}
+.evidence-list li {
+  padding: 0.75rem 0; border-bottom: 1px solid var(--border);
+  font-size: 0.95rem; line-height: 1.6;
+}
+.evidence-list li:last-child { border-bottom: none; }
+.evidence-list .tag {
+  display: inline-block; font-size: 0.7rem; font-weight: 500;
+  padding: 0.15rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;
+  vertical-align: middle; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.tag--pain { background: rgba(255, 107, 107, 0.15); color: var(--coral); }
+.tag--opp { background: rgba(34, 211, 238, 0.15); color: var(--cyan); }
+.tag--insight { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+
+.split-content {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+  align-items: start; max-width: 1100px;
+}
+@media (max-width: 768px) {
+  .split-content { grid-template-columns: 1fr; gap: 2rem; }
+  .slide { padding: 2rem; }
+}
+
+.stat-row {
+  display: flex; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; justify-content: center;
+}
+.stat-item { text-align: center; }
+.stat-item .stat-num {
+  font-size: 2.5rem; font-weight: 600; color: var(--cyan); line-height: 1;
+}
+.stat-item .stat-label {
+  font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.slide-content > * {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.slide-content.visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0s; }
+.slide-content.visible > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.12s; }
+.slide-content.visible > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.24s; }
+.slide-content.visible > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 0.36s; }
+.slide-content.visible > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 0.48s; }
+.slide-content.visible > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: 0.6s; }
+
+.slide-nav {
+  position: fixed; right: 2rem; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 0.75rem; z-index: 100;
+}
+.slide-nav .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2); border: none; padding: 0;
+  cursor: pointer; transition: background 0.3s, transform 0.3s;
+}
+.slide-nav .dot.active { background: var(--coral); transform: scale(1.3); }
+.slide-nav .dot:hover { background: rgba(255, 255, 255, 0.5); }
+
+.scroll-indicator {
+  position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  color: var(--text-muted); font-size: 0.7rem; font-weight: 400;
+  letter-spacing: 0.1em; animation: bobDown 2s ease-in-out infinite;
+}
+@keyframes bobDown {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(6px); }
+}
+
+.persona-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; text-align: left;
+}
+@media (max-width: 768px) { .persona-grid { grid-template-columns: 1fr; } }
+.persona-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.5rem;
+}
+.persona-card .persona-name { font-weight: 600; color: var(--text-primary); font-size: 1rem; margin-bottom: 0.25rem; }
+.persona-card .persona-role { font-size: 0.8rem; color: var(--cyan); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.persona-card p { font-size: 0.9rem; max-width: none; }
+
+.opp-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; text-align: left; }
+.opp-table th {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.opp-table td {
+  font-size: 0.9rem; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-body); vertical-align: top;
+}
+.opp-table td:first-child { color: var(--text-primary); font-weight: 500; }
+.opp-table .phase-tag {
+  font-size: 0.7rem; font-weight: 500; padding: 0.15rem 0.5rem; border-radius: 4px;
+  display: inline-block;
+}
+.phase-1 { background: rgba(34, 211, 238, 0.15); color: var(--cyan); }
+.phase-2 { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+.phase-3 { background: rgba(255, 107, 107, 0.15); color: var(--coral); }
+</style>
+</head>
+<body>
+
+<div class="slides-wrapper" id="slidesWrapper">
+
+<!-- SLIDE 1: Title -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">FIELDWISE RESEARCH</p>
+    <h1>Inside a Home Ed <span class="accent">WhatsApp Community</span></h1>
+    <p>Analysis of 15 WhatsApp group chats from the Horsham and Crawley Younger Years home education community. What works, what breaks, and where the platform opportunity sits.</p>
+    <div class="stat-row">
+      <div class="stat-item"><div class="stat-num">15</div><div class="stat-label">Group chats</div></div>
+      <div class="stat-item"><div class="stat-num">7,100+</div><div class="stat-label">Messages</div></div>
+      <div class="stat-item"><div class="stat-num">50+</div><div class="stat-label">Active parents</div></div>
+      <div class="stat-item"><div class="stat-num">6</div><div class="stat-label">Months of data</div></div>
+    </div>
+  </div>
+  <div class="scroll-indicator">SCROLL<span>&#8595;</span></div>
+</section>
+
+<!-- SLIDE 2: How the community is structured -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">HOW IT WORKS</p>
+    <h2>The Anatomy of a Home Ed <span class="accent">WhatsApp Community</span></h2>
+    <p>This is a WhatsApp Community with a central noticeboard and 14 sub-chats, each for a specific activity or venue. One person, Rachel Allen, created and administrates almost all of them. The structure reveals a clear hierarchy.</p>
+    <div class="card-grid">
+      <div class="slide-card">
+        <span class="card-icon">📢</span>
+        <h3>Central Noticeboard</h3>
+        <p>3,000+ messages. The main "What's on" chat. Links shared, events discussed, subchats created. Acts as discovery layer and coordination hub simultaneously.</p>
+      </div>
+      <div class="slide-card">
+        <span class="card-icon">📌</span>
+        <h3>Activity Sub-chats</h3>
+        <p>14 dedicated groups for specific activities: Field Trip Fridays, Nature Club, Lego Robotics, First Aid, museum visits, seasonal events. Each one a mini-project.</p>
+      </div>
+      <div class="slide-card">
+        <span class="card-icon">👩‍💻</span>
+        <h3>One Super Admin</h3>
+        <p>Rachel created 14 of 15 groups. She researches venues, negotiates pricing, manages bookings, chases payments, creates polls, and coordinates across chats.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: The Super Admin burden -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">KEY FINDING</p>
+    <h2>The <span class="accent-coral">Super Admin</span> Problem</h2>
+    <p>The entire community rests on Rachel's shoulders. She is simultaneously event researcher, venue negotiator, booking manager, payment collector, communications officer, and group moderator. The chats reveal this is unsustainable.</p>
+    <div class="quote">
+      "I've been overwhelmed with Little Street admin... which is still ongoing with emails and phone calls etc back and forth so put the first aid admin on hold."
+      <span class="quote-source">— Rachel Allen, First Aid Session chat</span>
+    </div>
+    <div class="callout">
+      <strong>Evidence from the chats:</strong> Rachel personally researches venues, emails providers, negotiates group rates, creates WhatsApp polls for dates, manually tallies attendee numbers across messages, sends individual payment requests via private message, tracks who has paid against bank transfers (often under different names), sends reminders, manages waitlists, handles cancellations, and coordinates late arrivals. For a single Godstone Farm trip, this involved 50+ admin messages over multiple days.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: The payment nightmare -->
+<section class="slide slide--centre slide--wide">
+  <div class="slide-content">
+    <p class="subtitle">PAIN POINT #1</p>
+    <h2>Payment Collection is a <span class="accent-coral">Nightmare</span></h2>
+    <p>Every group booking follows the same painful pattern. This is exactly the workflow Fieldwise replaces.</p>
+    <div class="card-grid">
+      <div class="slide-card">
+        <span class="card-icon">1️⃣</span>
+        <h3>Manual Price Calculation</h3>
+        <p>Rachel calculates cost per head based on total attendees. "For 30 people, probably minimum of £7.30 per person." Price changes as numbers shift, requiring recalculation and re-communication.</p>
+      </div>
+      <div class="slide-card">
+        <span class="card-icon">2️⃣</span>
+        <h3>Bank Transfer Collection</h3>
+        <p>Payment details sent by private message. Parents pay via bank transfer. Some pay under different names. No reference numbers. Rachel manually cross-references payments against a spreadsheet or handwritten list.</p>
+      </div>
+      <div class="slide-card">
+        <span class="card-icon">3️⃣</span>
+        <h3>Chasing and Reconciliation</h3>
+        <p>"Ask for a reference as I didn't... then you have people who pay under different names and it takes a little while to figure it out." Payments due dates missed. Manual chase-up required.</p>
+      </div>
+      <div class="slide-card">
+        <span class="card-icon">4️⃣</span>
+        <h3>Financial Risk on the Admin</h3>
+        <p>Rachel pays the venue upfront, then collects from families. If someone drops out or doesn't pay, she absorbs the loss. Zero protection, zero automation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: The headcount chaos -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">PAIN POINT #2</p>
+    <h2>Headcount Management is <span class="accent-coral">Chaos</span></h2>
+    <p>Every event requires manually counting who is coming, how many children, how many adults, who is participating vs supervising, and whether minimums are met. This plays out publicly in the chat.</p>
+    <ul class="evidence-list">
+      <li><span class="tag tag--pain">FIRST AID</span> Rachel sends 10+ individual messages tagging people: "I have you down as 2 people. Please can you confirm." "I have you down as 5 people for session 2." Each response requires manual tally updates.</li>
+      <li><span class="tag tag--pain">BUTCHERY</span> "So far there are 10 people in this chat. Maybe do a poll when more have joined? Like 15+?" — gauging demand through chat membership, not actual bookings.</li>
+      <li><span class="tag tag--pain">GODSTONE</span> Complex adult-to-child ratios for free entry: "people coming with 1 child who got 2 free adult tickets as they basically used up the free adult ratio." Rachel manually redistributes spare ratios across families.</li>
+      <li><span class="tag tag--pain">THEATRE</span> "I haven't done admin in a long time. I need to brush up on my skills." A second parent (Tash) volunteers to organise the panto and immediately discovers how hard it is.</li>
+      <li><span class="tag tag--pain">SESSION SPLIT</span> First Aid had to split into two sessions. Rachel manually assigns families to Session 1 or Session 2, then tracks capacity: "Session 1 will be full now."</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SLIDE 6: Information buried / lost -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">PAIN POINT #3</p>
+    <h2>Information Gets <span class="accent-coral">Buried and Lost</span></h2>
+    <p>Critical details vanish in the message stream. Parents join late, miss context, and ask questions that have already been answered. The admin re-explains repeatedly.</p>
+    <div class="quote">
+      "Gosh 100 messages 😂 what day and time is this sorted for please?"
+      <span class="quote-source">— Zoe, First Aid Session chat (joining a fast-moving thread)</span>
+    </div>
+    <ul class="evidence-list">
+      <li><span class="tag tag--insight">PATTERN</span> Rachel uses the group description as a pseudo-database, updating it repeatedly (sometimes 4-5 edits in a row) to store current event details. But most people don't read descriptions.</li>
+      <li><span class="tag tag--insight">PATTERN</span> Newcomers ask "how do we book?" or "what's the price?" long after it was discussed. Rachel forwards old messages and re-explains.</li>
+      <li><span class="tag tag--insight">PATTERN</span> Facebook links are the primary discovery mechanism: events found on Facebook are re-shared into WhatsApp with copied text. The information chain is Facebook post → WhatsApp message → group description edit → verbal reminder.</li>
+      <li><span class="tag tag--insight">PATTERN</span> "I posted about this on the Facebook group but I don't think anyone else wants to go?" — cross-platform fragmentation means the same event gets different visibility on different channels.</li>
+    </ul>
+    <div class="callout--cyan callout">
+      <strong>Fieldwise solves this:</strong> A persistent listing page with date, time, location, price, capacity, and booking status replaces the entire message chain. One URL instead of 100 messages.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: Venue negotiation -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">PAIN POINT #4</p>
+    <h2>Venue Negotiation is <span class="accent-coral">Exhausting</span></h2>
+    <p>Securing group rates, understanding pricing structures, and negotiating with venues is a recurring burden. The chats reveal this takes days of back-and-forth emails.</p>
+    <ul class="evidence-list">
+      <li><span class="tag tag--pain">PRICING</span> Daisy First Aid changed their pricing between the initial enquiry and booking. "It was originally £90 between up to 30 children. But as it is adults and children, she has changed it." Rachel had to re-negotiate and re-communicate to the group.</li>
+      <li><span class="tag tag--pain">COMPLEXITY</span> Godstone Farm pricing: group booking rate, SEND group rate (for free adult entry), child-to-adult ratios, optional activities, animal feed costs — all manually calculated and explained across multiple messages.</li>
+      <li><span class="tag tag--pain">PROOF</span> The Hawth theatre demanded "proof of home education" for discounted tickets. Tash spent an entire day emailing back and forth: "I cannot tell you how long it took to explain this and for them to understand."</li>
+      <li><span class="tag tag--pain">GHOSTING</span> "I didn't get a reply for a month but then sent another message and she replied." Venues not responding to individual parent enquiries.</li>
+      <li><span class="tag tag--pain">VENUE ACCESS</span> Rachel has spent 4 years trying to access free community spaces: "churches... always a no", "children's centres... a firm NO", "I've discussed with many churches." The venue barrier is real and persistent.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SLIDE 8: The people who make it work -->
+<section class="slide slide--centre slide--wide">
+  <div class="slide-content">
+    <p class="subtitle">WHO RUNS THIS</p>
+    <h2>The Community <span class="accent">Infrastructure</span> is People</h2>
+    <p>The chats reveal distinct roles within the community. Understanding these personas is critical for Fieldwise's provider-side product.</p>
+    <div class="persona-grid">
+      <div class="persona-card">
+        <div class="persona-name">The Super Admin (Rachel)</div>
+        <div class="persona-role">Community Builder</div>
+        <p>Creates groups, researches venues, negotiates rates, manages bookings and payments, provides emotional support, connects newcomers. Spends 10+ hours/week on unpaid admin. Has been doing this for 4+ years. Frequently overwhelmed but deeply committed.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-name">The Occasional Organiser (Tash, Bex)</div>
+        <div class="persona-role">Volunteer Helper</div>
+        <p>Steps up for one-off events (panto, butchery). Immediately discovers how hard admin is. "I was emailing all day yesterday and it's been HARD work." Asks for admin tips from Rachel. Requests £1 admin fee for their time.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-name">The Professional Provider (Karina, Perri)</div>
+        <div class="persona-role">Session Leader</div>
+        <p>Runs forest school, outdoor education, or specialist sessions as a small business. Uses the community for visibility and bookings. Has their own booking systems (ko-fi, bookwhen, yellowbricklab) but still relies on WhatsApp for reach.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-name">The Active Parent (Zoe, Katy, Clare, Sasha)</div>
+        <div class="persona-role">Regular Attendee</div>
+        <p>Attends regularly, responds to polls, pays on time, shares finds. Wants to know what's on and when. Overwhelmed by the volume of messages but engaged with the community.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: What the community actually does -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">ACTIVITY LANDSCAPE</p>
+    <h2>What <span class="accent">Actually Happens</span></h2>
+    <p>The range of activities is broad and validates the Fieldwise directory model. These are exactly the listings Fieldwise needs to capture.</p>
+    <div class="card-grid">
+      <div class="slide-card">
+        <h3 style="color:var(--cyan)">Venue Trips</h3>
+        <p>Godstone Farm, Fishers Farm, Tilgate Zoo, Amberley Museum, Weald and Downland, Warnham Nature Reserve, Drusillas, Science Discovery Centre. Group rates negotiated per trip.</p>
+      </div>
+      <div class="slide-card">
+        <h3 style="color:var(--green)">Regular Sessions</h3>
+        <p>Nature Club (fortnightly), Lego Robotics and Coding (weekly), Forest School, Outdoors In, Free Fridays park meetups. Mix of free and low-cost, led by parents or small providers.</p>
+      </div>
+      <div class="slide-card">
+        <h3 style="color:var(--purple)">One-off Events</h3>
+        <p>Family First Aid, deer butchery bushcraft, World Book Day, Easter meetups, panto trips, light parades, foraging walks. Require the most admin per event.</p>
+      </div>
+      <div class="slide-card">
+        <h3 style="color:var(--amber)">External Discoveries</h3>
+        <p>Members share finds: Yellow Brick Lab coding, World of Wheels, Buchan Country Park events, Bracknell Discovery Centre home ed days. Found via Facebook, word of mouth, and provider advertising.</p>
+      </div>
+    </div>
+    <div class="callout--cyan callout">
+      <strong>Key insight:</strong> The supply of activities is healthy. The problem is aggregation, visibility, and booking infrastructure — exactly as the business plan hypothesises.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: Pricing sensitivity -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">PRICING DYNAMICS</p>
+    <h2>How the Community Thinks About <span class="accent">Money</span></h2>
+    <p>The chats reveal nuanced pricing behaviour that directly informs Fieldwise's fee model.</p>
+    <ul class="evidence-list">
+      <li><span class="tag tag--insight">SENSITIVITY</span> Rachel always emphasises low cost: "I always try to keep cost as low as possible." Donations basis used for Nature Club: "If £3 per child is out of reach for you then please do still come along and give what you can from £0+."</li>
+      <li><span class="tag tag--insight">WILLINGNESS</span> But parents do pay for quality: £10-13 for first aid, £10.60 for Godstone, £22/head for the panto, £30/child for deer butchery. The threshold for perceived value is around £10-15 per session.</li>
+      <li><span class="tag tag--insight">ADMIN FEE</span> Tash asked for "an extra £1 for my time organising" the panto. This was the first mention of compensating admin work — and she felt she needed to justify it. There is no established norm for paying organisers.</li>
+      <li><span class="tag tag--insight">COST SHARING</span> Total cost divided by headcount is the standard model. Price per person changes as numbers shift. "For 30 people, probably minimum of £7.30 per person." This uncertainty is uncomfortable for families budgeting tightly.</li>
+      <li><span class="tag tag--insight">VENUE COSTS</span> "Many places charge £20-35+ an hour which is a lot." Venue hire is the hidden cost that either gets passed to families or absorbed by the organiser.</li>
+    </ul>
+    <div class="callout">
+      <strong>Fieldwise implication:</strong> The 10% platform fee model is sound. Parents already accept small add-ons (£1 admin, variable headcount pricing). A transparent "payment processing fee" of 40-50p on a £15 session is within tolerance. The key is that the listed price doesn't visibly inflate.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11: Minimum threshold validation -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">FEATURE VALIDATION</p>
+    <div class="big-number">20</div>
+    <h2>The minimum number problem is <span class="accent-green">real</span></h2>
+    <p>Almost every group booking in these chats has a minimum attendee requirement. The entire admin burden exists to hit that number.</p>
+    <ul class="evidence-list">
+      <li><span class="tag tag--opp">FIRST AID</span> "We will need minimum numbers to ensure the class goes ahead... at least 9 adult + child tickets." Rachel manually counted across 20+ messages to confirm viability.</li>
+      <li><span class="tag tag--opp">GODSTONE</span> Required minimum group size for educational visit pricing. Rachel gathered 15 children across the chat before confirming the booking.</li>
+      <li><span class="tag tag--opp">THEATRE</span> The Hawth requires 10 people for group booking discount. "I've personally never met that 10 person minimum so we have never been able to do a group booking." Until the group grew large enough.</li>
+      <li><span class="tag tag--opp">BUTCHERY</span> Provider can accommodate 10 children at £30 each. "If at least a few people message to say hey we are interested, he will be more inclined to offer something."</li>
+      <li><span class="tag tag--opp">LEGO</span> "6 is the minimum required to go ahead. We will wait until Monday and then make a decision about going ahead based on numbers."</li>
+    </ul>
+    <div class="callout--green callout">
+      <strong>This is Fieldwise's minimum threshold feature in the wild.</strong> Every single one of these scenarios would be automated: families book, the platform aggregates demand, and the session confirms when the minimum is met. No manual counting, no chasing, no risk to the organiser.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12: The emotional labour -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">THE HIDDEN COST</p>
+    <h2>The <span class="accent-purple">Emotional Labour</span> is Immense</h2>
+    <p>Beyond the operational admin, the chats reveal deep emotional labour from community organisers. This is the burnout risk that threatens community sustainability.</p>
+    <div class="quote">
+      "Like to the point of crying and offloading all my pandemic baby trauma and explaining the loneliness mothers often feel after having a baby... I had such a long conversation with this person at the hub in Horsham and she was sympathetic but basically said it is to do with funding."
+      <span class="quote-source">— Rachel Allen, on trying to access free venue space</span>
+    </div>
+    <div class="quote">
+      "It has been an ongoing battle of mine for around 4 years now. They don't want to know. I wanted to offer up free mothers circles at the hub nope. My friend wanted to do free yoga classes. Nope. My other friend wanted to do free lactation support. Nope."
+      <span class="quote-source">— Rachel Allen, First Aid Session chat</span>
+    </div>
+    <div class="callout--purple callout">
+      <strong>The platform opportunity is not just operational — it's emotional.</strong> Fieldwise doesn't just automate bookings. It takes the weight off the Rachels of the world. The pitch to community admins isn't "use our platform" — it's "let me take the admin off your plate," exactly as the business plan states.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13: What Fieldwise features are validated -->
+<section class="slide slide--centre slide--wide">
+  <div class="slide-content">
+    <p class="subtitle">FEATURE VALIDATION</p>
+    <h2>What the Chats <span class="accent">Validate</span> in the Business Plan</h2>
+    <table class="opp-table">
+      <thead>
+        <tr><th>Fieldwise Feature</th><th>Evidence from Chats</th><th>Phase</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Minimum attendee thresholds</td>
+          <td>Every group booking required manual headcount tracking against venue minimums</td>
+          <td><span class="phase-tag phase-1">Phase 4</span></td>
+        </tr>
+        <tr>
+          <td>Automated payment collection</td>
+          <td>Bank transfers under wrong names, no references, manual reconciliation, admin paying upfront</td>
+          <td><span class="phase-tag phase-1">Phase 4</span></td>
+        </tr>
+        <tr>
+          <td>Location-based discovery</td>
+          <td>Activities span Horsham, Crawley, Southwater, East Grinstead, Godstone, Hastings — no single view</td>
+          <td><span class="phase-tag phase-1">Phase 2</span></td>
+        </tr>
+        <tr>
+          <td>Central events calendar</td>
+          <td>Rachel maintains a rolling list in group descriptions, constantly updated. Parents still miss events.</td>
+          <td><span class="phase-tag phase-1">Phase 2</span></td>
+        </tr>
+        <tr>
+          <td>SEND suitability flags</td>
+          <td>Nature Club explicitly designed for SEN/PDA profiles. Godstone booked as SEND group for accessibility.</td>
+          <td><span class="phase-tag phase-1">Phase 2</span></td>
+        </tr>
+        <tr>
+          <td>Age-appropriate filtering</td>
+          <td>Constant discussion: "mine are 6 and 3 so I think we will skip", age-based session splitting</td>
+          <td><span class="phase-tag phase-1">Phase 2</span></td>
+        </tr>
+        <tr>
+          <td>Venue partnerships</td>
+          <td>Rachel individually negotiates with Godstone, Fishers, The Hawth, Daisy First Aid, bushcraft providers</td>
+          <td><span class="phase-tag phase-2">Phase 3+</span></td>
+        </tr>
+        <tr>
+          <td>Provider self-serve listings</td>
+          <td>Yellow Brick Lab, Two Muddy Boots, forest schools — all have own booking but no centralised visibility</td>
+          <td><span class="phase-tag phase-1">Phase 2</span></td>
+        </tr>
+        <tr>
+          <td>Reviews and trust signals</td>
+          <td>"We weren't massively impressed with Huxleys" — quality assessment happens via word of mouth only</td>
+          <td><span class="phase-tag phase-2">Phase 3</span></td>
+        </tr>
+        <tr>
+          <td>Newsletter / What's On digest</td>
+          <td>The noticeboard chat (3,000+ messages) is essentially a broken newsletter: right content, wrong format</td>
+          <td><span class="phase-tag phase-1">Phase 3</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SLIDE 14: New insights not in the business plan -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">NEW INSIGHTS</p>
+    <h2>What the Chats Reveal That <span class="accent-amber">Isn't</span> in the Business Plan</h2>
+    <div class="card-grid">
+      <div class="slide-card">
+        <h3 style="color:var(--amber)">Admin Compensation</h3>
+        <p>Tash asking for £1/ticket for her time is a signal. There's no mechanism to compensate community organisers. Fieldwise could enable a transparent "organiser fee" that legitimises this labour. This could be a powerful provider-side hook.</p>
+      </div>
+      <div class="slide-card">
+        <h3 style="color:var(--amber)">Proof of Home Education</h3>
+        <p>Multiple discussions about venues demanding "proof" that doesn't formally exist. Fieldwise could become a de facto verification layer — not LA-connected, but a trusted community membership that venues accept.</p>
+      </div>
+      <div class="slide-card">
+        <h3 style="color:var(--amber)">Sub-chat Proliferation Fatigue</h3>
+        <p>15 groups for one community. Parents join multiple chats and lose track. "I'm confused reading these messages now!" Messages get posted in the wrong chat. The structure that enables organisation also creates fragmentation.</p>
+      </div>
+      <div class="slide-card">
+        <h3 style="color:var(--amber)">Cross-community Coordination</h3>
+        <p>Multiple references to "the East Grinstead home edders", other WhatsApp communities, and Facebook groups. Events are cross-posted manually. There's no way for communities to share events without the admin doing it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 15: The Rachel problem as positioning -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">THE STRATEGIC INSIGHT</p>
+    <h2>Every community has a <span class="accent">Rachel</span></h2>
+    <p>The single most important takeaway from this analysis is structural. Every home ed community across the UK has someone like Rachel — a parent-volunteer who holds the entire local ecosystem together through sheer force of will and WhatsApp admin.</p>
+    <p>These people are:</p>
+    <ul class="evidence-list">
+      <li><span class="tag tag--insight">BURNING OUT</span> "I've been overwhelmed with Little Street admin." The workload scales linearly with community size. More families = more admin = more burnout.</li>
+      <li><span class="tag tag--insight">SINGLE POINT OF FAILURE</span> If Rachel stops, 15 groups and 50+ families lose their coordination layer overnight. There is no backup, no handover process, no institutional knowledge.</li>
+      <li><span class="tag tag--insight">NOT COMPENSATED</span> Zero pay for 10+ hours/week of skilled work: negotiation, communication, financial management, community building.</li>
+      <li><span class="tag tag--insight">THE IDEAL EARLY ADOPTER</span> Rachel and people like her are the exact person Fieldwise is built for. If the platform saves her 5 hours a week, she becomes a missionary for it.</li>
+    </ul>
+    <div class="callout--cyan callout">
+      <strong>Go-to-market insight:</strong> Don't sell Fieldwise to "the home ed community." Sell it to the Rachels. Find the super-admin in every local community. Solve their problem. They'll bring their entire network with them.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 16: Opportunities mapped -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">OPPORTUNITIES</p>
+    <h2>Platform Opportunities for <span class="accent">Parents</span> and <span class="accent-green">Session Leaders</span></h2>
+    <div class="split-content">
+      <div>
+        <h3 style="color:var(--cyan); margin-bottom:1rem;">For Families</h3>
+        <ul class="evidence-list">
+          <li>One place to see everything near them, not 15 WhatsApp groups</li>
+          <li>Clear, fixed pricing before they commit — no waiting for headcount</li>
+          <li>Instant booking with card payment, not bank transfers</li>
+          <li>Age and SEND filtering so they only see suitable sessions</li>
+          <li>A persistent record: dates, times, locations that don't vanish in a message stream</li>
+          <li>No Facebook dependency — the chats confirm links to Facebook are the primary info source</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color:var(--green); margin-bottom:1rem;">For Session Leaders</h3>
+        <ul class="evidence-list">
+          <li>Automated payment collection — no more chasing bank transfers</li>
+          <li>Minimum threshold automation — the platform confirms or cancels, not the admin</li>
+          <li>Attendee management with names, numbers, dietary/access needs in one place</li>
+          <li>Visibility beyond their WhatsApp bubble — reach families in adjacent areas</li>
+          <li>A legitimate way to charge an organiser fee without social awkwardness</li>
+          <li>Venue negotiation at scale — Fieldwise as intermediary removes the individual burden</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 17: Closing -->
+<section class="slide slide--centre">
+  <div class="slide-content">
+    <p class="subtitle">CONCLUSION</p>
+    <h1>The Problem is <span class="accent-coral">Verified</span></h1>
+    <p>These 15 WhatsApp groups are a living case study of everything the Fieldwise business plan describes. The discovery problem, the booking chaos, the payment friction, the admin burnout, the minimum threshold headaches, the venue negotiation burden — all of it is here, playing out in real messages between real parents.</p>
+    <p>The community is vibrant, the activity supply is strong, and the willingness to pay for quality experiences is clear. What's missing is infrastructure. Fieldwise is that infrastructure.</p>
+    <div class="callout--cyan callout">
+      <strong>Next step:</strong> Use Rachel's community as the founding case study. Her pain points map directly to Fieldwise's feature set. If the platform solves her problem, it solves the problem nationwide.
+    </div>
+    <p class="subtitle" style="margin-top: 2rem;">Fieldwise Research — March 2026</p>
+  </div>
+</section>
+
+</div>
+
+<!-- Dot navigation -->
+<nav class="slide-nav" id="slideNav"></nav>
+
+<script>
+const wrapper = document.getElementById('slidesWrapper');
+const slides = document.querySelectorAll('.slide');
+const nav = document.getElementById('slideNav');
+
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.classList.add('dot');
+  dot.addEventListener('click', () => slides[i].scrollIntoView({ behavior: 'smooth' }));
+  nav.appendChild(dot);
+});
+
+const dots = nav.querySelectorAll('.dot');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const content = entry.target.querySelector('.slide-content');
+    if (entry.isIntersecting) {
+      content.classList.add('visible');
+      const idx = [...slides].indexOf(entry.target);
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, { root: wrapper, threshold: 0.5 });
+
+slides.forEach(slide => observer.observe(slide));
+</script>
+</body>
+</html>
