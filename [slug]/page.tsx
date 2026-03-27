@@ -25,17 +25,7 @@ export async function generateMetadata({
   )
   if (!artefact) return {}
   return {
-    title: `${artefact.title} | dotfound artefacts`,
-    openGraph: {
-      title: artefact.title,
-      siteName: 'dotfound artefacts',
-      images: [{ url: '/og-image.png' }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: artefact.title,
-      images: ['/og-image.png'],
-    },
+    title: artefact.title,
   }
 }
 
