@@ -43,6 +43,13 @@
       "date": "2026-03-26",
       "has_password": true,
       "password": "chips123"
+    },
+    {
+      "slug": "5881690e127f",
+      "title": "Why Schol\u0113",
+      "type": "other",
+      "date": "2026-03-27",
+      "has_password": false
     }
   ]
 }
