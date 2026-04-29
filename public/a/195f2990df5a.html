@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dotfound · Control Panel</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=" />
+<style>
+/* ============================================================
+   dotfound design tokens (extracted from the design system)
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-2xs: 11px; --text-xs: 12px; --text-sm: 13px; --text-md: 14px;
+  --text-base: 15px; --text-lg: 17px; --text-xl: 20px; --text-2xl: 24px;
+  --text-3xl: 30px; --text-4xl: 40px; --text-5xl: 56px;
+
+  --lh-tight: 1.1; --lh-snug: 1.3; --lh-normal: 1.5;
+  --tracking-tight: -0.02em; --tracking-snug: -0.011em; --tracking-caps: 0.08em;
+
+  --fw-light: 300; --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+
+  --slate-1000: #08090C; --slate-950: #0B0D12; --slate-900: #0F1218;
+  --slate-850: #151821; --slate-800: #1C202B; --slate-750: #242937;
+  --slate-700: #2E3342; --slate-600: #3C4254; --slate-500: #565D73;
+  --slate-400: #7B8299; --slate-300: #9AA1B5; --slate-200: #C4C9D6;
+  --slate-100: #E6E8EF; --slate-50: #F4F5F8;
+
+  --purple-50: #F2EBFF; --purple-100: #E2D1FF; --purple-200: #C7A8FF;
+  --purple-300: #A982FF; --purple-400: #8E5CFF; --purple-500: #7A3AFF;
+  --purple-600: #6822F5; --purple-700: #5412C7; --purple-800: #3F0E96;
+
+  --green-400: #3FCF8E; --amber-400: #F5B849; --red-400: #F6685E; --blue-400: #5AB2FF;
+
+  --surface-base: var(--slate-950);
+  --surface-raised: var(--slate-900);
+  --surface-overlay: var(--slate-850);
+  --surface-sunken: var(--slate-1000);
+  --surface-hover: var(--slate-800);
+  --surface-pressed: var(--slate-750);
+
+  --text-primary: var(--slate-50);
+  --text-secondary: var(--slate-300);
+  --text-muted: var(--slate-400);
+  --text-disabled: var(--slate-500);
+  --text-accent: var(--purple-300);
+
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.09);
+  --border-strong: rgba(255,255,255,0.14);
+  --border-focus: var(--purple-400);
+
+  --brand: var(--purple-500); --brand-hover: var(--purple-400); --brand-pressed: var(--purple-600);
+  --brand-subtle: rgba(138,92,255,0.12); --brand-border: rgba(138,92,255,0.32);
+
+  --success: var(--green-400); --warning: var(--amber-400); --danger: var(--red-400); --info: var(--blue-400);
+
+  --radius-xs: 2px; --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-xl: 12px;
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-lg: 0 14px 40px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.30);
+  --shadow-focus: 0 0 0 3px rgba(138,92,255,0.35);
+
+  --dur-fast: 120ms; --dur-med: 180ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
+  height: 100vh;
+  overflow: hidden;
+}
+
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+a { color: var(--text-accent); text-decoration: none; }
+a:hover { color: var(--purple-200); }
+
+*:focus-visible { outline: none; box-shadow: var(--shadow-focus); border-radius: var(--radius-sm); }
+
+/* ===== Layout ===== */
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.header-left { display: flex; align-items: baseline; gap: var(--space-4); }
+.brand-mark {
+  font-size: var(--text-lg);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-snug);
+}
+.brand-mark .dot { color: var(--purple-400); }
+.header-date {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.header-right { display: flex; align-items: center; gap: var(--space-4); }
+.last-updated {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.icon-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+.icon-btn.spinning svg { animation: spin 1s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Grid ===== */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.panel.full-width { grid-column: 1 / -1; }
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.panel-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.panel-body { flex: 1; min-height: 0; overflow-y: auto; }
+
+.panel-body::-webkit-scrollbar { width: 6px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--slate-700); border-radius: 3px; }
+.panel-body::-webkit-scrollbar-track { background: transparent; }
+
+/* ===== Skeletons / states ===== */
+.skeleton {
+  height: 14px;
+  background: linear-gradient(90deg, var(--slate-850), var(--slate-800), var(--slate-850));
+  background-size: 200% 100%;
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.4s infinite;
+  margin-bottom: var(--space-3);
+}
+.skeleton:nth-child(2) { width: 80%; }
+.skeleton:nth-child(3) { width: 60%; }
+
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.error-state {
+  padding: var(--space-4);
+  background: rgba(246,104,94,0.06);
+  border: 1px solid rgba(246,104,94,0.20);
+  border-radius: var(--radius-md);
+  color: #F89189;
+  font-size: var(--text-sm);
+}
+.error-state button {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+/* ===== Calls list ===== */
+.call-item {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
+}
+.call-item:last-child { border-bottom: none; }
+.call-time {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.call-item.imminent {
+  position: relative;
+  padding-left: var(--space-3);
+  margin-left: calc(var(--space-3) * -1);
+  background: var(--brand-subtle);
+  border-radius: var(--radius-md);
+  border-bottom-color: transparent;
+}
+.call-item.imminent .call-time { color: var(--purple-300); }
+.call-item.allday .call-time { color: var(--text-muted); font-size: var(--text-xs); }
+.call-item.allday { opacity: 0.7; }
+.call-title { font-size: var(--text-sm); color: var(--text-primary); font-weight: var(--fw-medium); }
+.call-attendees { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+
+/* ===== Jira load chart ===== */
+.jira-chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+  align-items: end;
+  height: 140px;
+  padding: var(--space-2) 0;
+}
+.jira-day {
+  display: flex; flex-direction: column; align-items: center; justify-content: end;
+  height: 100%;
+  gap: var(--space-2);
+}
+.jira-bar {
+  width: 100%;
+  background: var(--brand);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 2px;
+  position: relative;
+  transition: background var(--dur-fast);
+}
+.jira-bar.empty { background: var(--slate-800); }
+.jira-bar.today { background: var(--purple-300); }
+.jira-bar.overload { background: var(--amber-400); }
+.jira-bar-value {
+  position: absolute;
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.jira-day-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+.jira-day.is-today .jira-day-label { color: var(--purple-300); }
+
+.jira-summary {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--text-xs);
+}
+.jira-summary span:first-child { color: var(--text-muted); }
+.jira-overdue { color: var(--red-400); font-family: var(--font-mono); }
+.jira-overdue.zero { color: var(--text-muted); }
+
+/* ===== Email triage ===== */
+.email-list { display: flex; flex-direction: column; gap: 1px; }
+.email-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  align-items: center;
+  transition: background var(--dur-fast);
+}
+.email-item:hover { background: var(--surface-hover); border-color: var(--border-default); }
+.email-meta {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.email-sender { color: var(--text-secondary); font-weight: var(--fw-medium); }
+.email-priority {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.email-priority.high { background: var(--red-400); }
+.email-priority.med { background: var(--amber-400); }
+.email-priority.low { background: var(--text-muted); }
+.email-summary { font-size: var(--text-sm); color: var(--text-primary); line-height: var(--lh-snug); }
+.email-action {
+  font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px;
+  font-style: italic;
+}
+.draft-btn {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--brand-subtle);
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  color: var(--purple-200);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition: all var(--dur-fast);
+}
+.draft-btn:hover { background: rgba(138,92,255,0.20); color: var(--purple-100); }
+
+/* ===== Projects + Pipeline ===== */
+.list-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
+}
+.list-row:last-child { border-bottom: none; }
+.list-row.muted { opacity: 0.6; }
+.list-name {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+.list-name:hover { color: var(--purple-200); }
+.list-sub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: flex; gap: var(--space-2); align-items: center;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  background: var(--surface-overlay);
+}
+.pill.status-active { background: rgba(63,207,142,0.10); border-color: rgba(63,207,142,0.28); color: #7EE3B0; }
+.pill.status-onhold { background: rgba(245,184,73,0.10); border-color: rgba(245,184,73,0.28); color: #F7CA78; }
+.pill.status-quoted { background: rgba(138,92,255,0.12); border-color: var(--brand-border); color: var(--purple-200); }
+.pill.status-quoting { background: rgba(90,178,255,0.10); border-color: rgba(90,178,255,0.28); color: #8BC9FF; }
+.pill.status-progress { background: rgba(63,207,142,0.10); border-color: rgba(63,207,142,0.28); color: #7EE3B0; }
+
+.list-amount {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.list-amount .prob {
+  display: block;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.stage-group { margin-bottom: var(--space-4); }
+.stage-group:last-child { margin-bottom: 0; }
+.stage-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.stage-name {
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.stage-totals {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Email overlay ===== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(8,9,12,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1060;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+.overlay.open { display: flex; }
+.overlay-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 720px;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.overlay-header {
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border-default);
+}
+.overlay-subject {
+  font-size: var(--text-lg);
+  font-weight: var(--fw-medium);
+  margin-bottom: var(--space-1);
+  color: var(--text-primary);
+}
+.overlay-from { font-size: var(--text-sm); color: var(--text-muted); }
+.overlay-body { padding: var(--space-5); flex: 1; overflow-y: auto; min-height: 280px; display: flex; flex-direction: column; }
+.overlay-textarea {
+  width: 100%;
+  min-height: 240px;
+  flex: 1;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--lh-normal);
+  resize: vertical;
+}
+.overlay-textarea:focus { border-color: var(--brand-border); }
+.overlay-loading {
+  display: flex; align-items: center; gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.overlay-footer {
+  display: flex; justify-content: flex-end; gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-default);
+  background: var(--surface-sunken);
+}
+.btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  border: 1px solid var(--border-default);
+  background: var(--surface-overlay);
+  color: var(--text-primary);
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+.btn:hover { background: var(--surface-hover); }
+.btn.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #FFFFFF;
+}
+.btn.primary:hover { background: var(--brand-hover); }
+.btn.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== Settings modal ===== */
+.settings-content {
+  padding: var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+.field label {
+  font-size: var(--text-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+.field input {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.field input:focus { border-color: var(--brand-border); outline: none; }
+.field-hint { font-size: var(--text-xs); color: var(--text-muted); }
+
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-default);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+  z-index: 1080;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--dur-med), transform var(--dur-med);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: rgba(63,207,142,0.30); }
+.toast.error { border-color: rgba(246,104,94,0.30); color: #F89189; }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header-left">
+      <div class="brand-mark">dotfound<span class="dot">.</span> control panel</div>
+      <div class="header-date" id="header-date">—</div>
+    </div>
+    <div class="header-right">
+      <div class="last-updated" id="last-updated">never</div>
+      <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="icon-btn" id="refresh-btn" title="Refresh" aria-label="Refresh all panels">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== GRID ===== -->
+  <main class="grid">
+    <!-- Today's Calls -->
+    <section class="panel" id="panel-calls">
+      <div class="panel-header">
+        <h2 class="panel-title">Today's calls</h2>
+        <span class="panel-meta" id="calls-meta"></span>
+      </div>
+      <div class="panel-body" id="calls-body">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- Jira Load -->
+    <section class="panel" id="panel-jira">
+      <div class="panel-header">
+        <h2 class="panel-title">Jira load · next 7 days</h2>
+        <span class="panel-meta" id="jira-meta"></span>
+      </div>
+      <div class="panel-body" id="jira-body">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- Email Triage -->
+    <section class="panel full-width" id="panel-email">
+      <div class="panel-header">
+        <h2 class="panel-title">Email triage</h2>
+        <span class="panel-meta" id="email-meta"></span>
+      </div>
+      <div class="panel-body" id="email-body">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- Live Projects -->
+    <section class="panel" id="panel-projects">
+      <div class="panel-header">
+        <h2 class="panel-title">Live projects</h2>
+        <span class="panel-meta" id="projects-meta"></span>
+      </div>
+      <div class="panel-body" id="projects-body">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+    </section>
+
+    <!-- Pipeline -->
+    <section class="panel" id="panel-pipeline">
+      <div class="panel-header">
+        <h2 class="panel-title">Pipeline</h2>
+        <span class="panel-meta" id="pipeline-meta"></span>
+      </div>
+      <div class="panel-body" id="pipeline-body">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== EMAIL OVERLAY ===== -->
+<div class="overlay" id="email-overlay">
+  <div class="overlay-card">
+    <div class="overlay-header">
+      <div class="overlay-subject" id="overlay-subject">—</div>
+      <div class="overlay-from" id="overlay-from">—</div>
+    </div>
+    <div class="overlay-body">
+      <div class="overlay-loading" id="overlay-loading" style="display:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spinning" style="animation: spin 1s linear infinite;"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
+        Drafting reply…
+      </div>
+      <textarea class="overlay-textarea" id="overlay-textarea" placeholder="Draft will appear here..."></textarea>
+    </div>
+    <div class="overlay-footer">
+      <button class="btn" id="overlay-discard">Discard</button>
+      <button class="btn primary" id="overlay-send">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS OVERLAY ===== -->
+<div class="overlay" id="settings-overlay">
+  <div class="overlay-card">
+    <div class="overlay-header">
+      <div class="overlay-subject">Settings</div>
+      <div class="overlay-from">API and connector tokens. Stored locally in this browser only.</div>
+    </div>
+    <div class="settings-content">
+      <div class="field">
+        <label for="setting-api-key">Anthropic API key</label>
+        <input type="password" id="setting-api-key" placeholder="sk-ant-..." autocomplete="off" />
+        <div class="field-hint">Used for Claude API calls with MCP servers attached.</div>
+      </div>
+      <div class="field">
+        <label for="setting-google-token">Google OAuth token (Calendar + Gmail)</label>
+        <input type="password" id="setting-google-token" placeholder="ya29..." autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="setting-atlassian-token">Atlassian OAuth token (Jira)</label>
+        <input type="password" id="setting-atlassian-token" placeholder="..." autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="setting-notion-token">Notion API token</label>
+        <input type="password" id="setting-notion-token" placeholder="ntn_..." autocomplete="off" />
+      </div>
+    </div>
+    <div class="overlay-footer">
+      <button class="btn" id="settings-cancel">Cancel</button>
+      <button class="btn primary" id="settings-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   dotfound Control Panel — runtime
+   Calls Anthropic API directly with MCP servers attached.
+   ============================================================ */
+
+const STORAGE_KEY = 'dotfound_control_panel_v1';
+const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
+const MODEL = 'claude-sonnet-4-20250514';
+
+const JIRA_CLOUD_ID = '9fa44888-bc80-410e-bc5e-94a6b6e5acc1';
+const NOTION_PROJECTS_DB = '63ea8548-0b82-42a9-a28e-fc6019d8ac1f';
+const NOTION_PIPELINE_DB = '22bdc2d4-c1c9-45f2-9d9e-d9a87db3d7ca';
+
+const EMAIL_TONE_PROMPT = `You are drafting email replies on behalf of Graham, a senior digital analytics consultant who runs dotfound. His tone is direct, knowledgeable, friendly without being effusive, and concise. He does not use filler phrases like "hope this finds you well" or "great to hear from you". Replies should be professional but human. Do not include a sign-off name — the email client adds a signature automatically. Output the reply body only, no subject line.`;
+
+let state = {
+  settings: loadSettings(),
+  data: {
+    calls: null, jira: null, emails: null, projects: null, pipeline: null
+  },
+  refreshTimer: null,
+  currentEmail: null
+};
+
+/* ===== Settings ===== */
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+function saveSettings(s) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  state.settings = s;
+}
+function hasSettings() {
+  return state.settings.apiKey && state.settings.googleToken &&
+         state.settings.atlassianToken && state.settings.notionToken;
+}
+
+/* ===== Helpers ===== */
+function el(id) { return document.getElementById(id); }
+
+function setHeaderDate() {
+  const d = new Date();
+  const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+  el('header-date').textContent = d.toLocaleDateString('en-GB', opts).toLowerCase();
+}
+
+function setLastUpdated() {
+  const d = new Date();
+  const t = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  el('last-updated').textContent = `updated ${t}`;
+}
+
+function showToast(msg, type = '') {
+  const t = el('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function fmtCurrency(n) {
+  if (n == null || isNaN(n)) return '£0';
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency', currency: 'GBP', maximumFractionDigits: 0
+  }).format(n);
+}
+
+function fmtTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function firstName(s) {
+  if (!s) return '';
+  const cleaned = s.replace(/<[^>]+>/g, '').replace(/"/g, '').trim();
+  return cleaned.split(/\s+|[@,]/)[0];
+}
+
+function showError(panelId, msg) {
+  el(panelId).innerHTML = `<div class="error-state">${escapeHtml(msg)}<br><button onclick="refreshAll()">Retry</button></div>`;
+}
+
+function showEmpty(panelId, msg) {
+  el(panelId).innerHTML = `<div class="empty-state">${escapeHtml(msg)}</div>`;
+}
+
+/* ============================================================
+   Anthropic API call with MCP servers
+   ============================================================ */
+async function callClaude(prompt, mcpServers, maxTokens = 4096) {
+  if (!state.settings.apiKey) throw new Error('Anthropic API key not set');
+
+  const body = {
+    model: MODEL,
+    max_tokens: maxTokens,
+    messages: [{ role: 'user', content: prompt }],
+    mcp_servers: mcpServers || []
+  };
+
+  const res = await fetch(ANTHROPIC_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': state.settings.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'mcp-client-2025-04-04'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`API error ${res.status}: ${txt.slice(0, 200)}`);
+  }
+
+  const data = await res.json();
+  // Find the final assistant text block
+  const textBlock = (data.content || []).reverse().find(b => b.type === 'text');
+  return textBlock ? textBlock.text : '';
+}
+
+function extractJSON(text) {
+  // Try fenced code block first
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const candidate = fence ? fence[1] : text;
+  // Try to find first { or [ to last } or ]
+  const start = Math.min(...['{', '['].map(c => {
+    const i = candidate.indexOf(c);
+    return i === -1 ? Infinity : i;
+  }));
+  if (start === Infinity) throw new Error('No JSON found in response');
+  const end = Math.max(candidate.lastIndexOf('}'), candidate.lastIndexOf(']'));
+  if (end === -1) throw new Error('Truncated JSON in response');
+  return JSON.parse(candidate.slice(start, end + 1));
+}
+
+/* ===== MCP server configs ===== */
+function mcpGoogle() {
+  return [
+    {
+      type: 'url',
+      url: 'https://calendarmcp.googleapis.com/mcp/v1',
+      name: 'google-calendar',
+      authorization_token: state.settings.googleToken
+    },
+    {
+      type: 'url',
+      url: 'https://gmailmcp.googleapis.com/mcp/v1',
+      name: 'gmail',
+      authorization_token: state.settings.googleToken
+    }
+  ];
+}
+function mcpJira() {
+  return [{
+    type: 'url',
+    url: 'https://mcp.atlassian.com/v1/mcp',
+    name: 'atlassian',
+    authorization_token: state.settings.atlassianToken
+  }];
+}
+function mcpNotion() {
+  return [{
+    type: 'url',
+    url: 'https://mcp.notion.com/mcp',
+    name: 'notion',
+    authorization_token: state.settings.notionToken
+  }];
+}
+function mcpGmailOnly() {
+  return [{
+    type: 'url',
+    url: 'https://gmailmcp.googleapis.com/mcp/v1',
+    name: 'gmail',
+    authorization_token: state.settings.googleToken
+  }];
+}
+
+/* ============================================================
+   Fetchers
+   ============================================================ */
+
+async function fetchCallsAndEmails() {
+  const today = new Date();
+  const todayISO = today.toISOString().slice(0, 10);
+  const tomorrow = new Date(today.getTime() + 24*60*60*1000).toISOString().slice(0, 10);
+
+  const prompt = `Use the google-calendar and gmail tools to fetch the following data. Then return a single JSON object only, no commentary.
+
+1. Today's calendar events (${todayISO} to ${tomorrow}). For each: time (ISO), title, attendees (array of first names only), allDay (boolean).
+
+2. Unread Gmail threads from the inbox. Apply judgment to identify which genuinely need a response from Graham — IGNORE newsletters, automated notifications, marketing, GitHub/Slack notifications, system FYIs. Keep ONLY threads where a human is asking Graham something or expecting a reply. For each one kept: id (thread id), sender (name only), subject, summary (one short line: what topic + what action is needed), priority ("high"|"med"|"low" — high = urgent client, med = client/work, low = peripheral). Order by priority then recency. Max 8 threads.
+
+Return JSON:
+{
+  "calls": [{ "time": "ISO", "title": "...", "attendees": ["Sam","Joel"], "allDay": false }],
+  "emails": [{ "id": "...", "sender": "...", "subject": "...", "summary": "...", "priority": "high|med|low" }]
+}`;
+
+  const text = await callClaude(prompt, mcpGoogle(), 4096);
+  return extractJSON(text);
+}
+
+async function fetchJira() {
+  const prompt = `Use the atlassian tool to query Jira on cloud id "${JIRA_CLOUD_ID}".
+
+Run JQL on the dotfound project for issues that are NOT done. Two queries:
+
+A) Issues with a due date in the next 7 days (today through today+6) with a remaining estimate.
+B) Overdue: issues with a due date before today and not done.
+
+Return ONLY this JSON:
+{
+  "byDay": [
+    { "date": "YYYY-MM-DD", "hours": <number — sum of remaining estimate hours>, "count": <int> }
+    // exactly 7 entries, today to today+6
+  ],
+  "overdue": <int — count of overdue issues>
+}
+
+Convert remaining estimate (which Jira returns in seconds) to hours by dividing by 3600. Sum per day. Include days with zero. Use ISO calendar dates.`;
+
+  const text = await callClaude(prompt, mcpJira(), 4096);
+  return extractJSON(text);
+}
+
+async function fetchNotion() {
+  const prompt = `Use the notion tool to query two databases.
+
+A) Projects database id "${NOTION_PROJECTS_DB}" — filter: Status = "Active" OR "On Hold".
+   For each: name, status, client (resolve relation to client name if possible, else null), billingType.
+
+B) Pipeline database id "${NOTION_PIPELINE_DB}" — filter: Status = "In Progress" OR "Quoting" OR "Quoted".
+   For each: id, name, estimate (number, GBP), serviceType, probability (number 0-100), status, url.
+
+Return ONLY this JSON:
+{
+  "projects": [{ "name": "...", "status": "Active|On Hold", "client": "...", "billingType": "...", "url": "..." }],
+  "pipeline": [{ "id":"...", "name": "...", "estimate": 5000, "serviceType": "...", "probability": 60, "status": "In Progress|Quoting|Quoted", "url": "..." }]
+}`;
+
+  const text = await callClaude(prompt, mcpNotion(), 6000);
+  return extractJSON(text);
+}
+
+/* ============================================================
+   Renderers
+   ============================================================ */
+
+function renderCalls(data) {
+  const calls = (data?.calls || []).slice().sort((a,b) => {
+    if (a.allDay && !b.allDay) return -1;
+    if (!a.allDay && b.allDay) return 1;
+    return new Date(a.time) - new Date(b.time);
+  });
+
+  if (!calls.length) { showEmpty('calls-body', 'No calls today.'); el('calls-meta').textContent=''; return; }
+  el('calls-meta').textContent = `${calls.length} ${calls.length === 1 ? 'event' : 'events'}`;
+
+  const now = new Date();
+  const html = calls.map(c => {
+    const t = c.time ? new Date(c.time) : null;
+    const imminent = t && (t - now) > -5*60*1000 && (t - now) < 60*60*1000;
+    const att = (c.attendees || []).slice(0,4).map(escapeHtml).join(', ');
+    return `<div class="call-item ${c.allDay ? 'allday' : ''} ${imminent ? 'imminent' : ''}">
+      <div class="call-time">${c.allDay ? 'all day' : escapeHtml(fmtTime(c.time))}</div>
+      <div>
+        <div class="call-title">${escapeHtml(c.title || 'Untitled')}</div>
+        ${att ? `<div class="call-attendees">${att}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  el('calls-body').innerHTML = html;
+}
+
+function renderJira(data) {
+  const byDay = data?.byDay || [];
+  const overdue = data?.overdue || 0;
+  if (!byDay.length) { showEmpty('jira-body', 'No load data.'); return; }
+
+  const max = Math.max(...byDay.map(d => d.hours || 0), 8);
+  const todayISO = new Date().toISOString().slice(0,10);
+
+  const days = byDay.slice(0,7).map((d, i) => {
+    const isToday = d.date === todayISO;
+    const hrs = Number(d.hours || 0);
+    const h = Math.max(2, Math.round((hrs / max) * 110));
+    const overload = hrs > 8;
+    const cls = `jira-bar ${hrs === 0 ? 'empty' : ''} ${isToday ? 'today' : ''} ${overload ? 'overload' : ''}`;
+    const dt = new Date(d.date + 'T00:00:00');
+    const lbl = i === 0 ? 'TDY' : dt.toLocaleDateString('en-GB',{weekday:'short'}).slice(0,3).toUpperCase();
+    return `<div class="jira-day ${isToday ? 'is-today' : ''}">
+      <div class="${cls}" style="height:${h}px;">
+        ${hrs > 0 ? `<span class="jira-bar-value">${hrs}h</span>` : ''}
+      </div>
+      <div class="jira-day-label">${escapeHtml(lbl)}</div>
+    </div>`;
+  }).join('');
+
+  const totalHours = byDay.reduce((s, d) => s + Number(d.hours || 0), 0);
+  el('jira-meta').textContent = `${totalHours}h booked`;
+
+  el('jira-body').innerHTML = `
+    <div class="jira-chart">${days}</div>
+    <div class="jira-summary">
+      <span>Hours by due date</span>
+      <span class="jira-overdue ${overdue === 0 ? 'zero' : ''}">${overdue === 0 ? 'no overdue' : overdue + ' overdue'}</span>
+    </div>
+  `;
+}
+
+function renderEmails(data) {
+  const emails = data?.emails || [];
+  if (!emails.length) { showEmpty('email-body', 'Inbox clear. Nothing needs a reply.'); el('email-meta').textContent=''; return; }
+  el('email-meta').textContent = `${emails.length} need${emails.length === 1 ? 's' : ''} a reply`;
+
+  const html = emails.slice(0, 8).map((e, idx) => `
+    <div class="email-item">
+      <div>
+        <div class="email-meta">
+          <span class="email-priority ${escapeHtml(e.priority || 'low')}"></span>
+          <span class="email-sender">${escapeHtml(e.sender || 'Unknown')}</span>
+          <span>·</span>
+          <span>${escapeHtml(e.subject || '')}</span>
+        </div>
+        <div class="email-summary">${escapeHtml(e.summary || '')}</div>
+      </div>
+      <button class="draft-btn" data-email-idx="${idx}">Draft reply</button>
+    </div>
+  `).join('');
+  el('email-body').innerHTML = html;
+
+  // Wire buttons
+  el('email-body').querySelectorAll('.draft-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = +btn.dataset.emailIdx;
+      openDraftOverlay(emails[idx]);
+    });
+  });
+}
+
+function renderProjects(data) {
+  const projects = data?.projects || [];
+  if (!projects.length) { showEmpty('projects-body', 'No active projects.'); el('projects-meta').textContent=''; return; }
+
+  // Active first, then On Hold
+  projects.sort((a, b) => {
+    if (a.status === 'Active' && b.status !== 'Active') return -1;
+    if (a.status !== 'Active' && b.status === 'Active') return 1;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+
+  const active = projects.filter(p => p.status === 'Active').length;
+  const onhold = projects.filter(p => p.status === 'On Hold').length;
+  el('projects-meta').textContent = `${active} active · ${onhold} on hold`;
+
+  const html = projects.map(p => {
+    const muted = p.status === 'On Hold' ? 'muted' : '';
+    const pillClass = p.status === 'Active' ? 'status-active' : 'status-onhold';
+    return `<div class="list-row ${muted}">
+      <div>
+        <div class="list-name" ${p.url ? `onclick="window.open('${escapeHtml(p.url)}','_blank')"` : ''}>${escapeHtml(p.name || 'Untitled')}</div>
+        <div class="list-sub">
+          <span class="pill ${pillClass}">${escapeHtml(p.status || '')}</span>
+          ${p.client ? `<span>${escapeHtml(p.client)}</span>` : ''}
+          ${p.billingType ? `<span>· ${escapeHtml(p.billingType)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  el('projects-body').innerHTML = html;
+}
+
+function renderPipeline(data) {
+  const pipeline = data?.pipeline || [];
+  if (!pipeline.length) { showEmpty('pipeline-body', 'No open deals.'); el('pipeline-meta').textContent=''; return; }
+
+  const stages = ['In Progress', 'Quoting', 'Quoted'];
+  const grouped = {};
+  for (const stage of stages) grouped[stage] = pipeline.filter(d => d.status === stage);
+
+  const totalAll = pipeline.reduce((s, d) => s + Number(d.estimate || 0), 0);
+  el('pipeline-meta').textContent = `${pipeline.length} deals · ${fmtCurrency(totalAll)}`;
+
+  const stageClasses = {
+    'In Progress': 'status-progress',
+    'Quoting': 'status-quoting',
+    'Quoted': 'status-quoted'
+  };
+
+  const html = stages.filter(s => grouped[s].length).map(stage => {
+    const deals = grouped[stage];
+    const total = deals.reduce((s, d) => s + Number(d.estimate || 0), 0);
+    const rows = deals.map(d => `
+      <div class="list-row">
+        <div>
+          <div class="list-name" ${d.url ? `onclick="window.open('${escapeHtml(d.url)}','_blank')"` : ''}>${escapeHtml(d.name || 'Untitled')}</div>
+          <div class="list-sub">
+            ${d.serviceType ? `<span>${escapeHtml(d.serviceType)}</span>` : ''}
+          </div>
+        </div>
+        <div class="list-amount">
+          ${fmtCurrency(d.estimate)}
+          ${d.probability != null ? `<span class="prob">${d.probability}%</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+    return `<div class="stage-group">
+      <div class="stage-header">
+        <span class="stage-name">${stage}</span>
+        <span class="stage-totals">${deals.length} · ${fmtCurrency(total)}</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  el('pipeline-body').innerHTML = html;
+}
+
+/* ============================================================
+   Refresh orchestration
+   ============================================================ */
+
+async function refreshPanel(name, fetcher, renderer, panelId) {
+  // Show skeleton
+  el(panelId + '-body').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+  try {
+    const data = await fetcher();
+    state.data[name] = data;
+    renderer(data);
+  } catch (err) {
+    console.error(`[${name}] failed:`, err);
+    showError(panelId + '-body', err.message || 'Failed to load.');
+  }
+}
+
+async function refreshAll() {
+  if (!hasSettings()) {
+    openSettings();
+    return;
+  }
+
+  const btn = el('refresh-btn');
+  btn.classList.add('spinning');
+
+  // Calendar + Gmail in one call (renders calls + emails together)
+  const callsEmailsPromise = (async () => {
+    el('calls-body').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+    el('email-body').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+    try {
+      const data = await fetchCallsAndEmails();
+      state.data.calls = { calls: data.calls };
+      state.data.emails = { emails: data.emails };
+      renderCalls(state.data.calls);
+      renderEmails(state.data.emails);
+    } catch (err) {
+      console.error('[calls+emails] failed:', err);
+      showError('calls-body', err.message || 'Failed to load.');
+      showError('email-body', err.message || 'Failed to load.');
+    }
+  })();
+
+  // Notion (Projects + Pipeline) in one call
+  const notionPromise = (async () => {
+    el('projects-body').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+    el('pipeline-body').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+    try {
+      const data = await fetchNotion();
+      state.data.projects = { projects: data.projects };
+      state.data.pipeline = { pipeline: data.pipeline };
+      renderProjects(state.data.projects);
+      renderPipeline(state.data.pipeline);
+    } catch (err) {
+      console.error('[notion] failed:', err);
+      showError('projects-body', err.message || 'Failed to load.');
+      showError('pipeline-body', err.message || 'Failed to load.');
+    }
+  })();
+
+  // Jira on its own
+  const jiraPromise = refreshPanel('jira', fetchJira, renderJira, 'panel-jira');
+
+  await Promise.allSettled([callsEmailsPromise, notionPromise, jiraPromise]);
+
+  setLastUpdated();
+  btn.classList.remove('spinning');
+}
+
+/* ============================================================
+   Email drafting overlay
+   ============================================================ */
+
+function openDraftOverlay(email) {
+  state.currentEmail = email;
+  el('overlay-subject').textContent = email.subject || '(no subject)';
+  el('overlay-from').textContent = `from ${email.sender || 'unknown'}`;
+  el('overlay-textarea').value = '';
+  el('overlay-loading').style.display = 'flex';
+  el('overlay-textarea').style.display = 'none';
+  el('email-overlay').classList.add('open');
+
+  // Generate draft
+  generateDraft(email);
+}
+
+async function generateDraft(email) {
+  try {
+    const prompt = `${EMAIL_TONE_PROMPT}
+
+Use the gmail tool to fetch the full thread for thread id "${email.id}", then draft a reply.
+
+Context for the reply:
+Sender: ${email.sender}
+Subject: ${email.subject}
+What it's about: ${email.summary}
+
+Read the full thread carefully, then output ONLY the body text of the reply. No subject line. No greeting unless contextually expected. No sign-off name.`;
+
+    const text = await callClaude(prompt, mcpGmailOnly(), 2048);
+
+    // Clean up — strip any leading/trailing fences or quotes
+    let clean = text.trim()
+      .replace(/^```[a-z]*\n?/i, '')
+      .replace(/```$/i, '')
+      .trim();
+
+    el('overlay-loading').style.display = 'none';
+    el('overlay-textarea').style.display = 'block';
+    el('overlay-textarea').value = clean;
+  } catch (err) {
+    console.error('[draft] failed:', err);
+    el('overlay-loading').style.display = 'none';
+    el('overlay-textarea').style.display = 'block';
+    el('overlay-textarea').value = '';
+    el('overlay-textarea').placeholder = 'Failed to generate draft: ' + err.message;
+  }
+}
+
+async function sendDraft() {
+  const body = el('overlay-textarea').value.trim();
+  if (!body || !state.currentEmail) return;
+
+  const sendBtn = el('overlay-send');
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Sending...';
+
+  try {
+    const prompt = `Use the gmail tool to send a reply to thread id "${state.currentEmail.id}". Reply with this exact body text — do not modify or add anything:
+
+---
+${body}
+---
+
+After sending, respond with the single word "OK".`;
+
+    await callClaude(prompt, mcpGmailOnly(), 1024);
+    showToast('Reply sent', 'success');
+    closeOverlay();
+    // Refresh emails after a short delay
+    setTimeout(() => refreshAll(), 1500);
+  } catch (err) {
+    console.error('[send] failed:', err);
+    showToast('Send failed: ' + err.message, 'error');
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send';
+  }
+}
+
+function closeOverlay() {
+  el('email-overlay').classList.remove('open');
+  el('overlay-send').disabled = false;
+  el('overlay-send').textContent = 'Send';
+  state.currentEmail = null;
+}
+
+/* ============================================================
+   Settings
+   ============================================================ */
+
+function openSettings() {
+  el('setting-api-key').value = state.settings.apiKey || '';
+  el('setting-google-token').value = state.settings.googleToken || '';
+  el('setting-atlassian-token').value = state.settings.atlassianToken || '';
+  el('setting-notion-token').value = state.settings.notionToken || '';
+  el('settings-overlay').classList.add('open');
+}
+
+function closeSettings() {
+  el('settings-overlay').classList.remove('open');
+}
+
+function saveSettingsHandler() {
+  const s = {
+    apiKey: el('setting-api-key').value.trim(),
+    googleToken: el('setting-google-token').value.trim(),
+    atlassianToken: el('setting-atlassian-token').value.trim(),
+    notionToken: el('setting-notion-token').value.trim()
+  };
+  saveSettings(s);
+  closeSettings();
+  if (hasSettings()) {
+    showToast('Settings saved', 'success');
+    refreshAll();
+  } else {
+    showToast('All four fields are required', 'error');
+  }
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+
+function init() {
+  setHeaderDate();
+
+  el('refresh-btn').addEventListener('click', refreshAll);
+  el('settings-btn').addEventListener('click', openSettings);
+  el('settings-save').addEventListener('click', saveSettingsHandler);
+  el('settings-cancel').addEventListener('click', closeSettings);
+  el('overlay-discard').addEventListener('click', closeOverlay);
+  el('overlay-send').addEventListener('click', sendDraft);
+
+  // ESC to close overlays
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (el('email-overlay').classList.contains('open')) closeOverlay();
+      if (el('settings-overlay').classList.contains('open')) closeSettings();
+    }
+  });
+
+  // Initial load
+  if (hasSettings()) {
+    refreshAll();
+  } else {
+    showEmpty('calls-body', 'Open settings to add your API key and tokens.');
+    showEmpty('jira-body', '—');
+    showEmpty('email-body', '—');
+    showEmpty('projects-body', '—');
+    showEmpty('pipeline-body', '—');
+    setTimeout(openSettings, 200);
+  }
+
+  // Auto-refresh every 10 minutes
+  state.refreshTimer = setInterval(() => {
+    if (hasSettings()) refreshAll();
+  }, REFRESH_INTERVAL);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
